@@ -36,13 +36,14 @@ function tab_(name) {
 function getAllData() {
   var ss = ss_();
   var dash = ss.getSheetByName('DASHBOARD');
-  var kpiVals = dash.getRange('A4:B15').getValues();
   var kpi = {};
-  kpiVals.forEach(function (r) { if (r[0]) kpi[String(r[0])] = r[1]; });
+  dash.getRange('A4:B15').getValues().forEach(function (r) { if (r[0]) kpi[String(r[0])] = r[1]; });
+  dash.getRange('A28:B37').getValues().forEach(function (r) { if (r[0]) kpi[String(r[0])] = r[1]; });
   return {
     kpi: kpi,
     portal: PORTAL_URL,
     po: tab_('PO'),
+    nx: tab_('NHAP_XUAT_KHO'),
     giaVon: tab_('GIA_VON'),
     ton: tab_('TON_KHO'),
     congNo: tab_('CONG_NO'),
@@ -69,26 +70,38 @@ function addPO(o) {
   return withLock_(function () {
     var sh = ss_().getSheetByName('PO');
     var r = sh.getLastRow() + 1;
-    sh.getRange(r, 1, 1, 9).setValues([[o.po, o.ngay, o.ncc, o.ma, Number(o.sl), Number(o.list), o.tiente, Number(o.ck1) / 100, Number(o.ck2) / 100]]);
-    sh.getRange(r, 10).setFormula('=IF(OR(F' + r + '="",H' + r + '="");"";F' + r + '*(1-H' + r + ')*(1-I' + r + '))');
-    sh.getRange(r, 11).setFormula('=IF(OR(E' + r + '="",J' + r + '="");"";E' + r + '*J' + r + ')');
-    sh.getRange(r, 12).setValue(Number(o.tygia));
-    sh.getRange(r, 13).setFormula('=IF(OR(K' + r + '="",L' + r + '="");"";K' + r + '*L' + r + ')');
-    sh.getRange(r, 16).setFormula('=SUMIFS(NHAP_XUAT_KHO!F:F;NHAP_XUAT_KHO!C:C;D' + r + ';NHAP_XUAT_KHO!B:B;"Nhập";NHAP_XUAT_KHO!D:D;A' + r + ')');
-    sh.getRange(r, 17).setFormula('=IF(E' + r + '="";"";E' + r + '-P' + r + ')');
-    sh.getRange(r, 18).setFormula('=IF(E' + r + '="";"";IF(P' + r + '>=E' + r + ';"Đã về đủ";IF(P' + r + '>0;"Về một phần";"Chưa về")))');
-    sh.getRange(r, 19).setValue(o.eta);
-    sh.getRange(r, 20).setFormula('=IF(OR(Q' + r + '<=0;S' + r + '="");"";IF(S' + r + '<TODAY();"🔴 Chậm ETA";IF(S' + r + '-TODAY()<=3;"🟠 Sắp đến ETA";"Đúng tiến độ")))');
-    sh.getRange(r, 21).setValue(o.kho || 'Kho chính');
-    sh.getRange(r, 22).setValue(o.khach || '');
-    return 'Đã thêm PO ' + o.po;
+    // Layout PO hiện tại: A Mã dòng PO | B Mã ĐH nội bộ | C Khách/Dự án | D Số PO | E Ngày PO | F Mã NCC |
+    // G Product Code | H Mô tả (công thức) | I SL đặt | J Đã nhận (công thức) | K Còn thiếu (công thức) |
+    // L Giá list | M CK chuẩn % | N CK đặc biệt % | O Giá mua NT (công thức) | P Tiền tệ | Q Tỷ giá |
+    // R Thành tiền VND (công thức) | S Trạng thái | T ETA | U Điều khoản TT | V Link hồ sơ | W Người phụ trách
+    sh.getRange(r, 1, 1, 7).setValues([[o.po + '/' + o.ma, o.madon || '', o.khach || '', o.po, o.ngay, o.ncc, o.ma]]);
+    sh.getRange(r, 8).setFormula('=IF(G' + r + '="";"";IFERROR(INDEX(MASTER_HANG!C:C;MATCH(G' + r + ';MASTER_HANG!A:A;0));""))');
+    sh.getRange(r, 9).setValue(Number(o.sl));
+    sh.getRange(r, 10).setFormula('=IF(A' + r + '="";"";SUMIFS(NHAP_XUAT_KHO!G:G;NHAP_XUAT_KHO!D:D;A' + r + ';NHAP_XUAT_KHO!B:B;"Nhập"))');
+    sh.getRange(r, 11).setFormula('=IF(A' + r + '="";"";MAX(I' + r + '-J' + r + ';0))');
+    sh.getRange(r, 12, 1, 3).setValues([[Number(o.list), Number(o.ck1), Number(o.ck2)]]);
+    sh.getRange(r, 15).setFormula('=IF(L' + r + '="";"";L' + r + '*(1-M' + r + '/100)*(1-N' + r + '/100))');
+    sh.getRange(r, 16).setValue(o.tiente);
+    sh.getRange(r, 17).setValue(Number(o.tygia));
+    sh.getRange(r, 18).setFormula('=IF(O' + r + '="";"";I' + r + '*O' + r + '*Q' + r + ')');
+    sh.getRange(r, 19).setValue(o.trangthai || 'Đã đặt PO');
+    sh.getRange(r, 20).setValue(o.eta);
+    sh.getRange(r, 21).setValue(o.dieukhoan || '');
+    sh.getRange(r, 23).setValue(o.phutrach || '');
+    return 'Đã thêm dòng PO ' + o.po + '/' + o.ma;
   });
 }
 
 function addPhieu(o) {
   return withLock_(function () {
     var sh = ss_().getSheetByName('NHAP_XUAT_KHO');
-    sh.appendRow([o.ngay, o.loai, o.ma, o.po || '', o.lo || '', Number(o.sl), o.khach || '', o.phieu || '']);
+    var r = sh.getLastRow() + 1;
+    // Layout NHAP_XUAT_KHO: A Ngày | B Loại | C Mã phiếu | D Mã dòng PO | E Product Code | F Tên hàng (công thức) | G SL | H Khách/Dự án | I Link chứng từ | J Ghi chú
+    sh.getRange(r, 1, 1, 5).setValues([[o.ngay, o.loai, o.maphieu || '', o.madongpo || '', o.ma]]);
+    sh.getRange(r, 6).setFormula('=IFERROR(INDEX(MASTER_HANG!C:C;MATCH(E' + r + ';MASTER_HANG!A:A;0));"")');
+    sh.getRange(r, 7).setValue(Number(o.sl));
+    sh.getRange(r, 8).setValue(o.khach || '');
+    sh.getRange(r, 10).setValue(o.note || '');
     return 'Đã ghi phiếu ' + o.loai + ' ' + o.ma;
   });
 }

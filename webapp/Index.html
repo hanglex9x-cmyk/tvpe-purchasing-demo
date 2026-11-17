@@ -111,6 +111,7 @@ var VIEWS = [
   { id: 'po',      icon: '🧾', name: 'Đơn hàng & PO', internal: true },
   { id: 'giavon',  icon: '💰', name: 'Giá vốn nhập khẩu', internal: true },
   { id: 'ton',     icon: '📦', name: 'Kho & tồn kho' },
+  { id: 'nx',      icon: '🔄', name: 'Nhập / Xuất kho' },
   { id: 'congno',  icon: '🏦', name: 'Công nợ NCC', internal: true },
   { id: 'chungtu', icon: '🗂️', name: 'Hồ sơ chứng từ', internal: true },
   { id: 'giaban',  icon: '🏷️', name: 'Bảng giá bán' },
@@ -118,12 +119,13 @@ var VIEWS = [
   { id: 'chiphi',  icon: '🚢', name: 'Chi phí nhập khẩu', internal: true },
   { id: 'master',  icon: '📚', name: 'Master Data', internal: true }
 ];
-var TITLES = { home: 'Trang chủ — Tổng quan', po: 'Đơn hàng & PO', giavon: 'Giá vốn nhập khẩu (Landed Cost)', ton: 'Kho & tồn kho', congno: 'Công nợ nhà cung cấp', chungtu: 'Hồ sơ chứng từ', giaban: 'Bảng giá bán', duyet: 'Phê duyệt giá dự án', chiphi: 'Chi phí nhập khẩu & phân bổ', master: 'Master Data' };
+var TITLES = { home: 'Trang chủ — Tổng quan', po: 'Đơn hàng & PO', giavon: 'Giá vốn nhập khẩu (Landed Cost)', ton: 'Kho & tồn kho', nx: 'Nhập / Xuất kho', congno: 'Công nợ nhà cung cấp', chungtu: 'Hồ sơ chứng từ', giaban: 'Bảng giá bán', duyet: 'Phê duyệt giá dự án', chiphi: 'Chi phí nhập khẩu & phân bổ', master: 'Master Data' };
 
 var COLS = {
-  po:      { all: [0,1,2,3,4,9,12,15,16,17,18,19,21] },
+  po:      { all: [0,1,2,3,5,6,8,9,10,14,16,17,18,19] },
   giavon:  { all: [0,1,2,3,4,8,9,10,11,12,15] },
-  ton:     { all: [0,1,2,3,4,5,6,7,8,9], sales: [0,1,2,7,8,9] },
+  ton:     { all: [0,1,2,3,4,5,6,7,8,9,10], sales: [0,1,2,7,8,9] },
+  nx:      { all: [0,1,2,3,4,5,6,7,9] },
   congno:  { all: [0,1,2,3,7,8,9,11,12] },
   chungtu: { all: [0,1,2,3,4,5,6,7,8] },
   giaban:  { all: [0,1,2,3,4,5,6,7,8,10], sales: [0,1,2,4,5,6,7,8,10] },
@@ -210,12 +212,22 @@ function renderHome() {
     '<div class="kpi"><div class="lb">CÒN THIẾU (SL)</div><div class="vl">' + fmt(g('Tổng SL còn thiếu (chưa về đủ)')) + '</div></div>' +
     '<div class="kpi red"><div class="lb">CÔNG NỢ CÒN PHẢI TRẢ (VND)</div><div class="vl">' + fmt(g('Tổng công nợ còn phải trả (VND)')) + '</div></div>' +
     '<div class="kpi teal"><div class="lb">TỒN KHẢ DỤNG (SL)</div><div class="vl">' + fmt(g('Tổng tồn khả dụng (tất cả mã)')) + '</div></div></div>';
+  h += '<div class="kpis">' +
+    '<div class="kpi"><div class="lb">TỔNG GIÁ TRỊ PO ĐÃ ĐẶT (VND)</div><div class="vl">' + fmt(g('Tổng giá trị PO đã đặt (VND)')) + '</div></div>' +
+    '<div class="kpi"><div class="lb">SL ĐÃ VỀ / ĐÃ ĐẶT</div><div class="vl">' + fmt(g('Tổng SL đã về')) + ' / ' + fmt(g('Tổng SL đã đặt')) + '</div></div>' +
+    '<div class="kpi"><div class="lb">PO ĐANG SẢN XUẤT</div><div class="vl">' + fmt(g('PO đang sản xuất')) + '</div></div>' +
+    '<div class="kpi"><div class="lb">PO ĐANG VẬN CHUYỂN</div><div class="vl">' + fmt(g('PO đang vận chuyển')) + '</div></div></div>';
   var quaHan = D.congNo.rows.filter(function (r) { return String(r[12]).indexOf('Quá hạn') >= 0; });
   var sapHan = D.congNo.rows.filter(function (r) { return String(r[12]).indexOf('Sắp đến hạn') >= 0; });
-  var chamETA = D.po.rows.filter(function (r) { return String(r[19]).indexOf('Chậm') >= 0; });
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var chamETA = D.po.rows.filter(function (r) {
+    if (!(Number(r[10]) > 0) || !r[19]) return false;
+    var p = String(r[19]).split('/'); if (p.length !== 3) return false;
+    return new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0])) < today;
+  });
   if (quaHan.length) h += '<div class="alert red">🔴 <b>' + quaHan.length + ' Invoice quá hạn:</b> ' + quaHan.map(function (r) { return r[0] + ' (' + r[2] + ', còn ' + fmt(r[9]) + 'đ)'; }).join(' • ') + '</div>';
   if (sapHan.length) h += '<div class="alert orange">🟠 <b>Sắp đến hạn:</b> ' + sapHan.map(function (r) { return r[0] + ' — hạn ' + r[11]; }).join(' • ') + '</div>';
-  if (chamETA.length) h += '<div class="alert orange">⏰ <b>PO chậm ETA:</b> ' + chamETA.map(function (r) { return r[0] + ' (' + r[3] + ', thiếu ' + fmt(r[16]) + ')'; }).join(' • ') + '</div>';
+  if (chamETA.length) h += '<div class="alert orange">⏰ <b>PO chậm ETA:</b> ' + chamETA.map(function (r) { return r[0] + ' (thiếu ' + fmt(r[10]) + ', ETA ' + r[19] + ')'; }).join(' • ') + '</div>';
   h += '<div class="alert blue">📄 Chứng từ bắt buộc còn thiếu: <b>' + fmt(g('Chứng từ bắt buộc còn thiếu')) + '</b> • Tổng quan đầy đủ ở tab Dashboard trong Google Sheet.</div>';
   if (role === 'internal') {
     var byNcc = {};
@@ -241,6 +253,7 @@ function render() {
   else if (curView === 'po') h = '<div class="toolbar"><button class="btn" onclick="openPO()">➕ Thêm PO mới</button></div><div class="card">' + tableHtml('po', D.po) + '</div>';
   else if (curView === 'giavon') h = '<div class="card">' + tableHtml('giavon', D.giaVon) + '</div><div class="alert blue">Chi phí của từng lô nằm ở module 🚢 Chi phí nhập khẩu — mỗi khoản phí phân bổ theo phương pháp riêng (giá trị / số lượng / trọng lượng). Lô có trạng thái <b>Đã chốt 🔒</b> không sửa giá vốn nữa.</div>';
   else if (curView === 'ton') h = '<div class="toolbar"><button class="btn" onclick="openPhieu()">➕ Ghi phiếu nhập / xuất</button></div><div class="card">' + tableHtml('ton', D.ton) + '</div>';
+  else if (curView === 'nx') h = '<div class="toolbar"><button class="btn" onclick="openPhieu()">➕ Ghi phiếu nhập / xuất</button></div><div class="card">' + tableHtml('nx', D.nx) + '</div><div class="alert blue">Phiếu nhập gắn <b>Mã dòng PO</b> sẽ tự cộng vào SL đã nhận của dòng PO đó; phiếu không gắn mã dòng PO được tính là hàng stock.</div>';
   else if (curView === 'congno') h = '<div class="toolbar"><button class="btn" onclick="openTT()">➕ Ghi thanh toán</button></div><div class="card">' + tableHtml('congno', D.congNo) + '</div>';
   else if (curView === 'chungtu') h = '<div class="card">' + tableHtml('chungtu', D.chungTu) + '</div>';
   else if (curView === 'giaban') h = '<div class="card">' + tableHtml('giaban', D.giaBan) + '</div>' + (role === 'sales' ? '<div class="alert blue">Sales chỉ thấy giá bán &amp; tồn khả dụng. Giá Project trống = chưa được duyệt cho dự án đó.</div>' : '');
@@ -277,22 +290,24 @@ function submitForm(fnName, form) {
   return false;
 }
 function openPO() {
-  openModal('➕ Thêm PO mới', '<form onsubmit="return submitForm(\'addPO\', this)"><div class="frow">' +
-    fld('Số PO', 'po', 'text', '', 'PO-2611-10') + fld('Ngày đặt', 'ngay', 'date') +
-    fld('Mã NCC', 'ncc', 'text', '', 'NCC-SG') + fld('Mã hàng', 'ma', 'text', '', 'PT-500') +
+  openModal('➕ Thêm dòng PO mới', '<form onsubmit="return submitForm(\'addPO\', this)"><div class="frow">' +
+    fld('Số PO', 'po', 'text', '', 'PO-2611-10') + fld('Mã đơn nội bộ (TVPE)', 'madon', 'text', '', 'TVPE-120') +
+    fld('Ngày đặt', 'ngay', 'date') + fld('Khách / Dự án', 'khach', 'text', '', 'Nhà máy A') +
+    fld('Mã NCC', 'ncc', 'text', '', 'NCC-SG') + fld('Mã hàng (Product Code)', 'ma', 'text', '', 'PT-500') +
     fld('Số lượng', 'sl', 'number') + fld('Giá list (ngoại tệ)', 'list', 'number') +
     '<div class="fld"><label>Tiền tệ</label><select name="tiente"><option>USD</option><option>EUR</option><option>JPY</option><option>CNY</option></select></div>' + fld('Tỷ giá (VND)', 'tygia', 'number') +
-    fld('CK1 (%)', 'ck1', 'number', '0') + fld('CK2 (%)', 'ck2', 'number', '0') +
-    fld('ETA dự kiến', 'eta', 'date') + fld('Khách / Dự án', 'khach', 'text', '') +
-    '</div><button class="btn" type="submit">Lưu PO</button> <button class="btn ghost" type="button" onclick="closeModal()">Hủy</button></form>');
+    fld('CK chuẩn (%)', 'ck1', 'number', '0') + fld('CK đặc biệt (%)', 'ck2', 'number', '0') +
+    '<div class="fld"><label>Trạng thái</label><select name="trangthai"><option>Đã đặt PO</option><option>Đang sản xuất</option><option>Hoàn thành chờ xuất</option><option>Đang vận chuyển</option><option>Đã về kho</option></select></div>' + fld('ETA dự kiến', 'eta', 'date') +
+    fld('Điều khoản thanh toán', 'dieukhoan', 'text', '', 'Net 60') + fld('Người phụ trách', 'phutrach', 'text', '') +
+    '</div><button class="btn" type="submit">Lưu dòng PO</button> <button class="btn ghost" type="button" onclick="closeModal()">Hủy</button></form>');
 }
 function openPhieu() {
   openModal('➕ Ghi phiếu nhập / xuất kho', '<form onsubmit="return submitForm(\'addPhieu\', this)"><div class="frow">' +
     fld('Ngày', 'ngay', 'date') +
     '<div class="fld"><label>Loại phiếu</label><select name="loai"><option>Nhập</option><option>Xuất</option></select></div>' +
+    fld('Mã phiếu', 'maphieu', 'text', '', 'PN-05 / PX-03') + fld('Mã dòng PO (nếu nhập theo PO)', 'madongpo', 'text', '', 'PO-2611-07/PT-500') +
     fld('Mã hàng', 'ma', 'text', '', 'PT-500') + fld('Số lượng', 'sl', 'number') +
-    fld('Số PO liên quan', 'po', 'text', '', 'PO-2611-07') + fld('Mã lô', 'lo', 'text', '', 'L-2611-A') +
-    fld('Khách / Dự án (nếu xuất)', 'khach', 'text', '') + fld('Số phiếu / chứng từ', 'phieu', 'text', '') +
+    fld('Khách / Dự án (nếu xuất)', 'khach', 'text', '') + fld('Ghi chú', 'note', 'text', '') +
     '</div><button class="btn" type="submit">Lưu phiếu</button> <button class="btn ghost" type="button" onclick="closeModal()">Hủy</button></form>');
 }
 function openTT() {
