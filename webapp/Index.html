@@ -71,6 +71,7 @@
   .stag.red { background: #FDE3E3; color: #B4232A; }
   .stag.orange { background: #FFE7D6; color: #B45309; }
   .stag.gray { background: #EDF1F6; color: #5A6B84; }
+  td.neg { color: #D92D20 !important; font-weight: 800; }
   tr:nth-child(even) td { background: #F7F9FC; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
@@ -256,7 +257,7 @@ function dataTable(tabKey, tab, opts) {
       var v = r[i];
       var hdr = String(x || '');
       var classes = [];
-      if (typeof v === 'number') classes.push('num');
+      if (typeof v === 'number') { classes.push('num'); if (v < 0 || (v === 0 && /khả dụng|còn thiếu|còn phải trả|còn lại|tồn/i.test(hdr))) classes.push('neg'); }
       if (/mô tả|tên hàng/i.test(hdr)) classes.push('wide');
       else if (/ghi chú/i.test(hdr)) classes.push('notec');
       else if (i === 0 || isCodeCol(hdr)) classes.push('code');
@@ -277,7 +278,7 @@ function dataTable(tabKey, tab, opts) {
   });
   return h + '</table>';
 }
-function tagFor(v) {
+function statusTag(v) {
   v = String(v || '');
   if (/quá hạn/i.test(v)) return '<span class="tag red">' + esc(v) + '</span>';
   if (/sắp đến hạn|chờ duyệt/i.test(v)) return '<span class="tag amber">' + esc(v) + '</span>';
@@ -367,8 +368,8 @@ var VIEWS = {
       + '<div class="kpi orange"><div class="lbl">Giá trị PO tháng này</div><div class="val">' + fmtN(k['Giá trị PO đặt trong tháng này (VND)']) + ' đ</div><div class="sub">PO đang thực hiện: ' + fmtN(k['PO đang thực hiện']) + ' · Còn thiếu: ' + fmtN(k['Tổng SL còn thiếu (chưa về đủ)']) + ' SP</div></div>'
       + '<div class="kpi teal"><div class="lbl">Tồn khả dụng toàn kho</div><div class="val">' + fmtN(k['Tổng tồn khả dụng (tất cả mã)']) + ' SP</div><div class="sub">Đã giữ cho dự án: ' + fmtN(k['Tổng hàng đã giữ cho dự án']) + ' SP · Tồn thực tế: ' + fmtN(k['Tổng tồn thực tế (tất cả mã)']) + '</div></div>'
       + '<div class="kpi"><div class="lbl">Hồ sơ còn thiếu chứng từ</div><div class="val">' + fmtN(k['Chứng từ bắt buộc còn thiếu']) + '</div><div class="sub">Xem mục Hồ sơ chứng từ</div></div></div>';
-    h += '<div class="card"><h3>🧾 PO đang thực hiện (còn thiếu hàng)</h3>' + dataTable('po', D.po, { hideCols: [1, 16, 20, 21], filter: function (r) { return Number(r[10]) > 0; }, render: function (i, v) { return i === 18 ? tagFor(v) : null; } }) + '</div>';
-    h += '<div class="card"><h3>🏦 Công nợ cần chú ý</h3>' + dataTable('congno', D.congno, { hideCols: [13], filter: function (r) { return Number(r[11]) > 0; }, render: function (i, v) { return i === 12 ? tagFor(v) : null; } }) + '</div>';
+    h += '<div class="card"><h3>🧾 PO đang thực hiện (còn thiếu hàng)</h3>' + dataTable('po', D.po, { hideCols: [1, 16, 20, 21], filter: function (r) { return Number(r[10]) > 0; }, render: function (i, v) { return i === 18 ? statusTag(v) : null; } }) + '</div>';
+    h += '<div class="card"><h3>🏦 Công nợ cần chú ý</h3>' + dataTable('congno', D.congno, { hideCols: [13], filter: function (r) { return Number(r[11]) > 0; }, render: function (i, v) { return i === 12 ? statusTag(v) : null; } }) + '</div>';
     return h;
   },
   po: function () {
@@ -378,16 +379,18 @@ var VIEWS = {
       + '<span style="font-size:13px;color:#5A6B84">In PO:</span><select id="poPrintSel" style="padding:8px 10px;border:1.5px solid #CBD6E4;border-radius:8px;font-size:13.5px">' + pos.map(function (p) { return '<option>' + esc(p) + '</option>'; }).join('') + '</select>'
       + '<button class="btn navy" onclick="printPO()">🖨️ In / Xuất PDF</button>'
       + '<span class="sp"></span><span style="font-size:13px;color:#5A6B84">Mỗi dòng = 1 model trong 1 PO · Sửa/Xóa ở cột Thao tác cuối bảng</span></div>';
-    h += '<div class="card"><h3>Danh sách dòng PO</h3>' + dataTable('po', D.po, { hideCols: [16, 21], render: function (i, v) { return i === 18 ? tagFor(v) : null; } }) + '</div>';
+    h += '<div class="card"><h3>Danh sách dòng PO</h3>' + dataTable('po', D.po, { hideCols: [16, 21], render: function (i, v) { return i === 18 ? statusTag(v) : null; } }) + '</div>';
     return h;
   },
   giavon: function () {
-    var h = '<div class="card"><h3>💰 Giá vốn theo lô hàng</h3><p class="desc">Giá vốn thực tế = giá mua quy đổi + chi phí nhập khẩu phân bổ theo từng khoản (theo giá trị / số lượng / trọng lượng). Lô đã chốt 🔒 không sửa số liệu lịch sử.</p>' + dataTable('giavon', D.giavon, { render: function (i, v) { return i === 14 ? tagFor(v) : null; } }) + '</div>';
+    var h = '<div class="card"><h3>💰 Giá vốn theo lô hàng</h3><p class="desc">Giá vốn thực tế = giá mua quy đổi + chi phí nhập khẩu phân bổ theo từng khoản (theo giá trị / số lượng / trọng lượng). Lô đã chốt 🔒 không sửa số liệu lịch sử.</p>' + dataTable('giavon', D.giavon, { render: function (i, v) { return i === 14 ? statusTag(v) : null; } }) + '</div>';
     h += '<div class="card"><h3>🧮 Chi phí nhập khẩu theo lô</h3><div class="toolbar">' + addBtn('chiphi') + '</div>' + dataTable('chiphi', D.chiphi) + '</div>';
     return h;
   },
   ton: function () {
-    return '<div class="card"><h3>📦 Tồn kho theo mã hàng</h3><p class="desc">Tồn khả dụng = Tồn thực tế − Đã giữ cho dự án. Bấm Sửa để cập nhật: tồn đầu kỳ, số lượng giữ cho dự án và ghi chú đơn giữ.</p>' + dataTable('ton', D.ton, { render: function (i, v, r) { if (i === 7) { var n = Number(v); return '<b>' + fmtN(v) + '</b>' + (n <= 0 ? ' <span class="tag red">Hết khả dụng</span>' : ''); } return null; } }) + '</div>';
+    var stIdx = D.ton.headers.findIndex(function (x) { return /tình trạng/i.test(String(x)); });
+    var tonHide = stIdx >= 0 ? [stIdx] : [];
+    return '<div class="card"><h3>📦 Tồn kho theo mã hàng</h3><p class="desc">Tồn khả dụng = Tồn thực tế − Đã giữ cho dự án. Số 0 hoặc âm ở cột Tồn khả dụng sẽ tự tô đỏ. Bấm Sửa để cập nhật: tồn đầu kỳ, số lượng giữ cho dự án và ghi chú đơn giữ.</p>' + dataTable('ton', D.ton, { hideCols: tonHide }) + '</div>';
   },
   nx: function () {
     var h = '<div class="toolbar">' + (PERMS.write ? '<button class="btn" onclick="openPhieu()">➕ Ghi phiếu nhập / xuất</button>' : '') + '</div>';
@@ -396,12 +399,12 @@ var VIEWS = {
   },
   congno: function () {
     var h = '<div class="toolbar">' + (PERMS.write ? '<button class="btn" onclick="openTT()">➕ Ghi thanh toán</button>' : '') + addBtn('congno', '➕ Thêm Invoice công nợ') + '</div>';
-    h += '<div class="card"><h3>🏦 Công nợ nhà cung cấp (theo Invoice)</h3>' + dataTable('congno', D.congno, { render: function (i, v) { return i === 12 ? tagFor(v) : null; } }) + '</div>';
+    h += '<div class="card"><h3>🏦 Công nợ nhà cung cấp (theo Invoice)</h3>' + dataTable('congno', D.congno, { render: function (i, v) { return i === 12 ? statusTag(v) : null; } }) + '</div>';
     h += '<div class="card"><h3>💸 Lịch sử thanh toán</h3><p class="desc">Một Invoice trả nhiều lần → nhiều dòng cùng số Invoice. Một lệnh chuyển tiền trả nhiều Invoice → nhiều dòng cùng mã CK.</p><div class="toolbar">' + addBtn('thanhtoan') + '</div>' + dataTable('thanhtoan', D.thanhtoan) + '</div>';
     return h;
   },
   chungtu: function () {
-    return '<div class="card"><h3>🗂️ Checklist hồ sơ chứng từ</h3><div class="toolbar">' + addBtn('chungtu') + '</div>' + dataTable('chungtu', D.chungtu, { render: function (i, v) { return (i === 4 || i === 5) ? tagFor(v) : null; } }) + '</div>';
+    return '<div class="card"><h3>🗂️ Checklist hồ sơ chứng từ</h3><div class="toolbar">' + addBtn('chungtu') + '</div>' + dataTable('chungtu', D.chungtu, { render: function (i, v) { return (i === 4 || i === 5) ? statusTag(v) : null; } }) + '</div>';
   },
   giaban: function () {
     if (ROLE === 'sales') return '<div class="ok">👔 Chế độ Sales: bảng giá dưới đây chỉ gồm giá bán. Để xem file Portal chính thức của Sales, dùng link “Mở Portal Sales” ở menu trái.</div>' + giabanTable(true);
@@ -413,14 +416,14 @@ var VIEWS = {
     D.duyet.rows.forEach(function (r) {
       var row = r[r.length - 1];
       h += '<tr>';
-      D.duyet.headers.forEach(function (x, i) { h += '<td' + (typeof r[i] === 'number' ? ' class="num"' : '') + '>' + (i === 8 ? tagFor(r[i]) : fmtN(r[i])) + '</td>'; });
+      D.duyet.headers.forEach(function (x, i) { h += '<td' + (typeof r[i] === 'number' ? ' class="num"' : '') + '>' + (i === 8 ? statusTag(r[i]) : fmtN(r[i])) + '</td>'; });
       h += '<td style="white-space:nowrap">' + (PERMS.approve ? (r[8] === 'Chờ duyệt' ? '<button class="btn sm" style="background:#0FA06E" onclick="duyet(' + row + ',\'Đã duyệt\')">✔ Duyệt</button> <button class="btn sm del" onclick="duyet(' + row + ',\'Từ chối\')">✖ Từ chối</button>' : '<span style="color:#5A6B84;font-size:12px">Đã xử lý</span>') : '') + '</td>';
       h += '<td class="act">' + (PERMS.write ? '<button class="btn sm edit" onclick="openEdit(\'duyet\',' + row + ')">✏️ Sửa</button> ' : '') + (PERMS.del ? '<button class="btn sm del" onclick="doDelete(\'duyet\',' + row + ')">🗑️ Xóa</button>' : '') + '</td></tr>';
     });
     return h + '</table></div>';
   },
   giahang: function () {
-    return '<div class="card"><h3>🏭 Bảng giá hãng theo thời gian hiệu lực</h3><p class="desc">Giá mới chỉ áp dụng cho PO mới — giao dịch lịch sử đã khóa không thay đổi.</p><div class="toolbar">' + addBtn('giahang') + '</div>' + dataTable('giahang', D.giahang, { render: function (i, v) { return i === 7 ? tagFor(v) : null; } }) + '</div>';
+    return '<div class="card"><h3>🏭 Bảng giá hãng theo thời gian hiệu lực</h3><p class="desc">Giá mới chỉ áp dụng cho PO mới — giao dịch lịch sử đã khóa không thay đổi.</p><div class="toolbar">' + addBtn('giahang') + '</div>' + dataTable('giahang', D.giahang, { render: function (i, v) { return i === 7 ? statusTag(v) : null; } }) + '</div>';
   },
   master: function () {
     var h = '<div class="tabs"><button class="on" data-mt="mhang">Mã hàng</button><button data-mt="mncc">Nhà cung cấp</button><button data-mt="mkhach">Khách hàng / Dự án</button></div><div id="mtBody"></div>';
