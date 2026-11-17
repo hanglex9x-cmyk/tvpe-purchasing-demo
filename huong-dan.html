@@ -8,10 +8,10 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #EEF1F6; color: #1B2A44; }
   .layout { display: flex; min-height: 100vh; }
-  .sidebar { width: 268px; flex: 0 0 268px; background: linear-gradient(180deg, #060F24, #0B2341 70%, #0D2B4F); color: #DCE6F2; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 40; overflow: hidden; }
-  .menu-scroll { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) transparent; }
-  .menu-scroll::-webkit-scrollbar { width: 6px; }
-  .menu-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.22); border-radius: 3px; }
+  .sidebar { width: 268px; flex: 0 0 268px; background: linear-gradient(180deg, #060F24, #0B2341 70%, #0D2B4F); color: #DCE6F2; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 40; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: #1D4066 transparent; }
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: #1D4066; border-radius: 3px; }
   .brand { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,.08); min-height: 76px; flex: 0 0 auto; }
   .logo { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; background: #F97316; color: #fff; font-weight: 800; font-size: 21px; display: flex; align-items: center; justify-content: center; }
   .brand h1 { font-size: 19px; color: #fff; line-height: 1.15; } .brand p { font-size: 11px; color: #93A7C4; margin-top: 2px; }
@@ -58,7 +58,6 @@
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="brand"><div class="logo">T</div><div><h1>TVPE</h1><p>Portal Hướng dẫn sử dụng</p></div></div>
-    <div class="menu-scroll">
     <div class="menu-label">Mục lục</div>
     <nav class="menu">
       <a href="#bat-dau"><span class="ic">🚀</span><span class="tx">1. Bắt đầu — các link cần lưu</span></a>
@@ -73,7 +72,6 @@
       <a href="#phan-quyen"><span class="ic">🔐</span><span class="tx">10. Phân quyền & an toàn</span></a>
       <a href="#su-co"><span class="ic">🛠️</span><span class="tx">11. Xử lý sự cố thường gặp</span></a>
     </nav>
-    </div>
     <div class="side-foot">Hệ thống quản trị mua hàng & nhập khẩu TVPE — dữ liệu nằm trên Google Drive của công ty.</div>
   </aside>
   <div class="scrim" id="scrim" style="display:none"></div>
@@ -196,6 +194,8 @@
       <div class="card" id="phan-quyen">
         <h3>🔐 10. Phân quyền & an toàn dữ liệu</h3>
         <ul>
+          <li><b>Đăng nhập bằng tài khoản riêng:</b> mở App là phải đăng nhập. Admin vào mục <b>Hệ thống → Người dùng & phân quyền</b> trong App để tạo tài khoản, sửa họ tên/vai trò, tick từng quyền cho từng người (Xem giá vốn & công nợ · Thêm/Sửa · Xóa · Duyệt giá), khóa tài khoản và đặt lại mật khẩu. Mỗi người tự đổi mật khẩu của mình bằng nút “Đổi mật khẩu”.</li>
+          <li>Tài khoản <b>không có quyền xem giá vốn</b> (ví dụ Sales): hệ thống chỉ gửi bảng giá bán + tồn khả dụng — dữ liệu giá mua, giá vốn, công nợ không được gửi xuống máy của họ, và họ không ghi/sửa/xóa được gì.</li>
           <li><b>Tuyệt đối không chia sẻ file Sheet nội bộ cho Sales</b> — Sales chỉ nhận link Portal Sales. Ẩn sheet không phải là bảo mật.</li>
           <li>File hệ thống phải nằm trên Drive của công ty, có <b>ít nhất 2 người quản trị</b>; không để hệ thống phụ thuộc vào một tài khoản cá nhân duy nhất.</li>
           <li>Khi nhân sự nghỉ việc/thay đổi: thu hồi quyền truy cập của tài khoản đó ngay trong phần chia sẻ của Drive.</li>
