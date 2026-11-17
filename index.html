@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>TVPE — Quản trị Mua hàng & Nhập khẩu | Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0B2341;--navy2:#12325E;--orange:#F97316;--teal:#0E9F6E;--amber:#D97706;--red:#DC2626;--bg:#EEF2F7;--card:#fff;--line:#E2E8F0;--mut:#64748B;--ink:#0F172A}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+a{color:inherit}
+.top{background:linear-gradient(120deg,var(--navy),var(--navy2) 60%,#1D4ED8);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:50;box-shadow:0 4px 20px rgba(11,35,65,.25)}
+.toprow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;max-width:1280px;margin:0 auto}
+.logo{display:flex;gap:12px;align-items:center}
+.logoicon{width:44px;height:44px;border-radius:12px;background:var(--orange);display:grid;place-items:center;font-size:22px;font-weight:900}
+.logo h1{font-size:17px;line-height:1.15}
+.logo p{font-size:12px;opacity:.85}
+.badge{background:#FEF3C7;color:#92400E;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800}
+.role{display:flex;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px;gap:3px}
+.role button{border:0;background:transparent;color:#fff;padding:8px 12px;border-radius:999px;font-weight:700;font-size:12.5px;cursor:pointer}
+.role button.on{background:#fff;color:var(--navy)}
+.wrap{max-width:1280px;margin:0 auto;padding:14px}
+.nav{display:flex;gap:8px;overflow:auto;padding:4px 0 10px;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{white-space:nowrap;border:1px solid var(--line);background:#fff;padding:9px 13px;border-radius:999px;font-weight:700;cursor:pointer;color:#334155}
+.nav button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.nav button.locked{opacity:.55}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}.cols2{display:grid;grid-template-columns:1.35fr .85fr;gap:14px}.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.kpi b{font-size:22px;display:block;margin:4px 0}
+.kpi span{color:var(--mut);font-size:12px;font-weight:600}
+.kpi .up{color:var(--red);font-weight:800;font-size:12px}.kpi .ok{color:var(--teal);font-weight:800;font-size:12px}
+h2{font-size:16px;margin-bottom:6px}h3{font-size:14px;margin-bottom:8px}
+.sub{color:var(--mut);font-size:12.5px;line-height:1.5;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:12.8px}
+th{text-align:left;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:8px 6px;border-bottom:1px solid var(--line)}
+td{padding:9px 6px;border-bottom:1px solid #F1F5F9;vertical-align:top}
+.tblwrap{overflow:auto}
+.pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.p-blue{background:#DBEAFE;color:#1E40AF}.p-green{background:#D1FAE5;color:#065F46}.p-amber{background:#FEF3C7;color:#92400E}.p-red{background:#FEE2E2;color:#991B1B}.p-gray{background:#F1F5F9;color:#475569}.p-orange{background:#FFEDD5;color:#9A3412}
+.pipe{display:flex;gap:3px;align-items:center;margin-top:5px}
+.pipe i{height:6px;flex:1;border-radius:99px;background:#E2E8F0}.pipe i.done{background:var(--teal)}.pipe i.now{background:var(--orange)}
+.bar{height:8px;background:#F1F5F9;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--teal)}
+.bar.warn i{background:var(--amber)}.bar.red i{background:var(--red)}
+.btn{border:0;background:var(--orange);color:#fff;padding:10px 14px;border-radius:11px;font-weight:800;cursor:pointer}
+.btn2{border:1px solid var(--line);background:#fff;padding:10px 14px;border-radius:11px;font-weight:700;cursor:pointer}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+label{font-size:12px;font-weight:700;color:#475569;display:block;margin:8px 0 4px}
+.calc{display:grid;gap:10px}@media(min-width:900px){.calc{grid-template-columns:1fr 1fr}}
+.result{background:var(--navy);color:#fff;border-radius:14px;padding:14px}
+.result b{font-size:20px}.result div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.2);font-size:13px}
+.check{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #F1F5F9}
+.hide{display:none!important}
+.alert{background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:11px;font-size:12.8px;line-height:1.5;margin-bottom:10px}
+.alert.red{background:#FEF2F2;border-color:#FECACA}
+.alert.green{background:#ECFDF5;border-color:#A7F3D0}
+.lockbox{text-align:center;padding:28px 14px;color:var(--mut)}
+.lockbox .big{font-size:34px;margin-bottom:8px}
+.folder{font-family:ui-monospace,monospace;font-size:12.5px;line-height:1.9;background:#0F172A;color:#E2E8F0;border-radius:12px;padding:14px;overflow:auto}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.flow span{background:#EFF6FF;border:1px solid #BFDBFE;padding:7px 10px;border-radius:999px;font-weight:700;font-size:12px}.flow em{color:var(--mut);font-style:normal}
+footer{color:var(--mut);font-size:12px;text-align:center;padding:18px;line-height:1.6}
+.search{display:flex;gap:8px;margin-bottom:10px}.search input{flex:1}
+.small{font-size:12px;color:var(--mut);line-height:1.5}
+strong.num{white-space:nowrap}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="toprow">
+    <div class="logo">
+      <div class="logoicon">T</div>
+      <div>
+        <h1>TVPE — QUẢN TRỊ MUA HÀNG &amp; NHẬP KHẨU</h1>
+        <p>Mua hàng • Giá vốn • Kho • Công nợ NCC • Hồ sơ • Bảng giá Sales</p>
+      </div>
+      <span class="badge">DEMO • DỮ LIỆU MẪU</span>
+    </div>
+    <div>
+      <div class="small" style="color:#CBD5E1;margin-bottom:5px;text-align:right">Xem demo ở vai:</div>
+      <div class="role">
+        <button id="roleInternal" class="on" onclick="setRole('internal')">🔓 Mua hàng / Quản trị</button>
+        <button id="roleSales" onclick="setRole('sales')">👔 Sales</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="salesBanner" class="alert green hide">✅ <b>Bạn đang xem ở vai Sales:</b> chỉ thấy <b>Bảng giá bán (Trading / End User / Project đã duyệt)</b>, catalogue &amp; tồn khả dụng. Giá mua, chiết khấu hãng, giá vốn, chi phí nhập khẩu và công nợ NCC <b>đã bị tách hẳn</b> — không phải ẩn sheet, mà là file/giao diện riêng. Đây là điểm bảo mật quan trọng nhất của hệ thống thật.</div>
+  <div id="internalBanner" class="alert">💡 <b>Cách xem demo trong 2 phút:</b> bấm lần lượt các tab bên dưới → đặc biệt thử mục <b>Giá vốn nhập khẩu</b> (tự tính lại khi đổi chiết khấu/tỷ giá) và nút <b>Sales</b> ở góc phải để thấy Sales <b>không</b> xem được giá vốn. Dữ liệu dưới đây là mẫu, đúng với quy mô team nhỏ — dưới 100 mã hàng, 99% nhập khẩu, 2 NCC cấp Credit.</div>
+
+  <nav class="nav" id="nav">
+    <button class="on" data-tab="dash" onclick="go('dash')">📊 Tổng quan lãnh đạo</button>
+    <button data-tab="po" data-internal="1" onclick="go('po')">🧾 Đơn hàng &amp; PO</button>
+    <button data-tab="cost" data-internal="1" onclick="go('cost')">💰 Giá vốn nhập khẩu</button>
+    <button data-tab="stock" onclick="go('stock')">📦 Kho &amp; Hàng giữ</button>
+    <button data-tab="ap" data-internal="1" onclick="go('ap')">🏦 Công nợ NCC</button>
+    <button data-tab="docs" onclick="go('docs')">🗂️ Hồ sơ chứng từ</button>
+    <button data-tab="price" onclick="go('price')">🏷️ Bảng giá Sales</button>
+    <button data-tab="arch" onclick="go('arch')">⚙️ Master Data &amp; Kiến trúc</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section id="tab-dash">
+    <div class="grid">
+      <div class="card kpi"><span>PO ĐANG THỰC HIỆN</span><b>12 PO</b><span class="ok">8 đúng tiến độ</span> · <span class="up">2 chậm ETA</span></div>
+      <div class="card kpi"><span>GIÁ TRỊ PO THÁNG 11/2026</span><b>$86.400</b><span>+ €21.750 • 5 PO mới</span></div>
+      <div class="card kpi internalOnly"><span>CÔNG NỢ PHẢI TRẢ NCC</span><b>$48.200</b><span class="up">1 khoản quá hạn 6 ngày</span></div>
+      <div class="card kpi"><span>HỒ SƠ CÒN THIẾU CHỨNG TỪ</span><b>3 đơn</b><span>Chưa đủ bộ bàn giao khách</span></div>
+    </div>
+    <div class="cols2">
+      <div class="card">
+        <h2>🚨 Việc cần chú ý hôm nay</h2>
+        <p class="sub">Dashboard tự tổng hợp từ PO, kho, công nợ và checklist chứng từ — lãnh đạo không cần mở từng sheet. Bấm vào từng dòng ở bản thật sẽ truy ngược về đúng PO / Invoice đó.</p>
+        <div class="check"><span>🔴 <b>PO-2611-07</b> — Cảm biến PT-500 — chậm ETA <b>6 ngày</b> (ETA 11/11, chưa xuất xưởng)</span><span class="pill p-red">Chậm</span></div>
+        <div class="check"><span>🟠 <b>INV-SG-8841</b> — NCC Singapore — đến hạn <b>trong 3 ngày</b>, còn phải trả $18.400</span><span class="pill p-amber">Sắp hạn</span></div>
+        <div class="check"><span>🟠 <b>Đơn TVPE-118</b> — đã về kho nhưng <b>thiếu CO bản gốc</b> để bàn giao khách A</span><span class="pill p-amber">Thiếu hồ sơ</span></div>
+        <div class="check"><span>🟢 <b>PO-2611-03</b> — Van điều khiển — đã về đủ 40/40, chờ xuất cho dự án B</span><span class="pill p-green">Đã về đủ</span></div>
+      </div>
+      <div class="card internalOnly">
+        <h2>Giá vốn: dự kiến vs thực tế</h2>
+        <p class="sub">Chênh lệch phát sinh khi cước / phí thực tế khác dự kiến — hệ thống giữ cả 2 lớp, không ghi đè lịch sử đã chốt.</p>
+        <div class="check"><span>Lô L-2610-A (PT-500)</span><b>+1,8%</b></div>
+        <div class="check"><span>Lô L-2610-B (Van CV-200)</span><b style="color:var(--teal)">−0,6%</b></div>
+        <div class="check"><span>Lô L-2609-C (Biến tần)</span><b>+3,1%</b></div>
+        <p class="small" style="margin-top:8px">⚠️ Thuế GTGT được khấu trừ <b>không</b> cộng vào giá vốn quản trị — sẽ thống nhất 1 quy tắc với kế toán / MISA ngay từ đầu.</p>
+      </div>
+      <div class="card hide" id="dashSalesCard">
+        <h2>Tồn khả dụng cho Sales</h2>
+        <div class="check"><span>PT-500 Cảm biến áp suất</span><b>18 cái bán được</b></div>
+        <div class="check"><span>CV-200 Van điều khiển</span><b>40 cái (dự án B)</b></div>
+        <div class="check"><span>VFD-75 Biến tần 7.5kW</span><b style="color:var(--red)">0 — đang về, ETA 28/11</b></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Tiến độ hàng về — nhìn 1 màn hình là đủ</h2>
+      <div class="tblwrap"><table>
+        <tr><th>PO</th><th>Model</th><th>Đặt / Đã về / Còn thiếu</th><th>Trạng thái</th><th>ETA</th></tr>
+        <tr><td><b>PO-2611-07</b></td><td>PT-500</td><td>50 / 0 / <b>50</b></td><td><span class="pill p-red">Đang sản xuất • Chậm</span><div class="pipe"><i class="done"></i><i class="now"></i><i></i><i></i><i></i></div></td><td><b>11/11</b> ⚠️</td></tr>
+        <tr><td><b>PO-2611-03</b></td><td>CV-200</td><td>40 / 40 / <b>0</b></td><td><span class="pill p-green">Đã về kho</span><div class="pipe"><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i><i class="done"></i></div></td><td>Đã về 14/11</td></tr>
+        <tr><td><b>PO-2610-19</b></td><td>VFD-75</td><td>20 / 12 / <b>8</b></td><td><span class="pill p-blue">Đang vận chuyển • Về 2 đợt</span><div class="pipe"><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i></div></td><td>28/11 (đợt 2)</td></tr>
+      </table></div>
+      <p class="small">Cấu trúc đúng yêu cầu khó nhất: <b>1 đơn hàng → nhiều PO → mỗi PO nhiều model → mỗi model về nhiều đợt</b>. Số “còn thiếu” tự cộng dồn, không nhập tay.</p>
+    </div>
+  </section>
+
+  <!-- PO -->
+  <section id="tab-po" class="hide internalTab">
+    <div class="card">
+      <h2>Module 01 — Quản lý Đơn hàng &amp; Purchase Order</h2>
+      <p class="sub">Luồng: Tiếp nhận nhu cầu → Khách xác nhận → Đặt PO NCC → Sản xuất / Vận chuyển → Nhận hàng (nhiều đợt) → Xuất kho / Bàn giao → Đối chiếu thanh toán.</p>
+      <div class="flow"><span>1. Nhu cầu / Báo giá</span><em>→</em><span>2. Khách xác nhận</span><em>→</em><span>3. Đặt PO</span><em>→</em><span>4. Sản xuất</span><em>→</em><span>5. Vận chuyển • ETA</span><em>→</em><span>6. Nhận hàng</span><em>→</em><span>7. Bàn giao + Thanh toán</span></div>
+    </div>
+    <div class="card"><div class="tblwrap"><table>
+      <tr><th>Mã ĐH nội bộ</th><th>Khách / Dự án</th><th>PO NCC</th><th>Model</th><th>SL đặt / nhận / thiếu</th><th>Giá trị PO</th><th>Thanh toán</th></tr>
+      <tr><td><b>TVPE-118</b></td><td>Khách A — Nhà máy</td><td>PO-2611-07<br><span class="small">NCC Singapore • USD</span></td><td>PT-500</td><td>50 / 0 / <b>50</b></td><td><strong class="num">$16.975</strong></td><td><span class="pill p-amber">Net 60 • Chưa TT</span></td></tr>
+      <tr><td><b>TVPE-115</b></td><td>Dự án B</td><td>PO-2611-03<br><span class="small">NCC Đức • EUR</span></td><td>CV-200</td><td>40 / 40 / <b>0</b></td><td><strong class="num">€21.750</strong></td><td><span class="pill p-blue">Đã TT 50%</span></td></tr>
+      <tr><td><b>TVPE-109</b></td><td>Khách C — Trading</td><td>PO-2610-19<br><span class="small">NCC Singapore • USD</span></td><td>VFD-75</td><td>20 / 12 / <b>8</b></td><td><strong class="num">$28.600</strong></td><td><span class="pill p-amber">Trả trước 30%</span></td></tr>
+    </table></div>
+    <p class="small">Mỗi dòng PO đều có link mở thẳng thư mục hồ sơ trên Drive và link sang Invoice / công nợ tương ứng — không phải đi tìm file trong máy cá nhân nữa.</p></div>
+  </section>
+
+  <!-- COST -->
+  <section id="tab-cost" class="hide internalTab">
+    <div class="alert">🧮 <b>Thử ngay:</b> đổi chiết khấu, tỷ giá hoặc cước vận chuyển ở cột trái — <b>giá vốn / sản phẩm tự tính lại</b>. Đây chính là logic sẽ chạy bằng công thức trong Google Sheets ở bản thật, có khóa lịch sử: bảng giá mới <b>không</b> làm thay đổi PO đã chốt.</div>
+    <div class="calc">
+      <div class="card">
+        <h2>Module 02 — Tính giá mua &amp; Landed Cost</h2>
+        <p class="sub">Lô mẫu: <b>PT-500 — Cảm biến áp suất</b> • SL 50 cái • NCC Singapore (USD)</p>
+        <label>Giá list hãng (USD / cái)</label><input id="listPrice" type="number" value="420" oninput="calc()">
+        <label>Chiết khấu tiêu chuẩn (%)</label><input id="disc1" type="number" value="18" oninput="calc()">
+        <label>Chiết khấu đặc biệt theo PO (%) — áp thêm trên giá đã giảm</label><input id="disc2" type="number" value="5" oninput="calc()">
+        <label>Tỷ giá USD/VND của lô này</label><input id="fx" type="number" value="25800" oninput="calc()">
+        <label>Tổng chi phí nhập khẩu của lô (VND) — cước quốc tế + thuế NK + hải quan + bank + VC nội địa + kiểm định</label><input id="landed" type="number" value="68500000" oninput="calc()">
+        <label>Phương pháp phân bổ chi phí</label>
+        <select id="alloc" onchange="calc()"><option value="value">Theo giá trị hàng (khuyên dùng cho cước / thuế NK)</option><option value="qty">Theo số lượng (phù hợp phí theo kiện / kiểm định)</option><option value="weight">Theo trọng lượng (phù hợp cước hàng nặng)</option></select>
+        <p class="small" style="margin-top:8px">Bản thật cho chọn phương pháp <b>theo từng loại chi phí</b>, không ép 1 cách cho tất cả. Chi phí được lưu kèm căn cứ: tỷ giá, % chiết khấu và chứng từ của đúng lô đó.</p>
+      </div>
+      <div>
+        <div class="result">
+          <div><span>Giá mua thực tế / cái</span><b id="rBuyUsd">—</b></div>
+          <div><span>Giá mua quy VND / cái</span><span id="rBuyVnd">—</span></div>
+          <div><span>Chi phí nhập khẩu phân bổ / cái</span><span id="rAlloc">—</span></div>
+          <div style="border:0"><span><b>GIÁ VỐN VỀ KHO / cái</b></span><b id="rCost">—</b></div>
+          <p style="font-size:12px;opacity:.85;margin-top:8px" id="rNote"></p>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h3>Dự kiến vs Thực tế</h3>
+          <div class="check"><span>Giá vốn dự kiến (khi đặt PO)</span><b>9.180.000đ</b></div>
+          <div class="check"><span>Giá vốn thực tế (sau khi đủ phí)</span><b id="rCost2">—</b></div>
+          <div class="check"><span>Chênh lệch</span><b id="rDiff" style="color:var(--amber)">—</b></div>
+          <p class="small">Khi đã chốt giá vốn thực tế, lô đó được <b>khóa</b> — sửa phải có người duyệt và để lại lịch sử, tránh số liệu lịch sử bị thay đổi lặng lẽ.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STOCK -->
+  <section id="tab-stock" class="hide">
+    <div class="card">
+      <h2>Module 03 — Kho: Tồn thực tế ≠ Tồn bán được</h2>
+      <p class="sub">Điểm hay bị nhầm nhất ở doanh nghiệp thương mại: hàng trong kho nhưng <b>đã giữ cho dự án khác</b> thì Sales không được bán tiếp. Hệ thống tách rõ 3 con số này.</p>
+      <div class="tblwrap"><table>
+        <tr><th>Product Code / Model</th><th>Tồn thực tế</th><th>Đã giữ (Reserve)</th><th>Tồn khả dụng</th><th>Đang về</th><th>Trạng thái</th></tr>
+        <tr><td><b>PT-500</b><br><span class="small">Cảm biến áp suất</span></td><td>32</td><td>14 (TVPE-112)</td><td><b>18</b></td><td>50</td><td><span class="pill p-green">Bán được</span></td></tr>
+        <tr><td><b>CV-200</b><br><span class="small">Van điều khiển</span></td><td>40</td><td>40 (Dự án B)</td><td><b>0</b></td><td>0</td><td><span class="pill p-amber">Đã giữ hết</span></td></tr>
+        <tr><td><b>VFD-75</b><br><span class="small">Biến tần 7.5kW</span></td><td>12</td><td>12 (TVPE-109)</td><td><b>0</b></td><td>8</td><td><span class="pill p-blue">Chờ đợt 2</span></td></tr>
+        <tr><td><b>LT-300</b><br><span class="small">Cảm biến mức</span></td><td>9</td><td>0</td><td><b>9</b></td><td>0</td><td><span class="pill p-green">Hàng stock</span></td></tr>
+      </table></div>
+      <p class="small">Cảnh báo tự động: tồn âm, nhập thiếu so với PO, xuất vượt tồn khả dụng. Phiếu nhập luôn gắn với PO + lô; phiếu xuất luôn gắn với đơn hàng / dự án / khách.</p>
+    </div>
+  </section>
+
+  <!-- AP -->
+  <section id="tab-ap" class="hide internalTab">
+    <div class="cols2">
+      <div class="card"><h2>NCC cấp Credit — theo dõi hạn mức</h2>
+        <div class="check"><span><b>NCC Singapore</b> • Net 60<br><span class="small">Hạn mức $150.000 — đã dùng $48.200</span></span><b>32%</b></div><div class="bar"><i style="width:32%"></i></div>
+        <div class="check" style="margin-top:10px"><span><b>NCC Đức</b> • Net 30<br><span class="small">Hạn mức €80.000 — đã dùng €21.750</span></span><b>27%</b></div><div class="bar"><i style="width:27%"></i></div>
+        <p class="small" style="margin-top:10px">Vượt / gần chạm hạn mức sẽ cảnh báo trước khi đặt PO mới — tránh đặt hàng xong mới biết hết Credit.</p>
+      </div>
+      <div class="card"><h2>Cảnh báo đến hạn</h2>
+        <div class="check"><span>🔴 INV-DE-2210</span><b>Quá hạn 6 ngày</b></div>
+        <div class="check"><span>🟠 INV-SG-8841</span><b>Còn 3 ngày</b></div>
+        <div class="check"><span>🟢 INV-SG-8790</span><b>Còn 24 ngày</b></div>
+      </div>
+    </div>
+    <div class="card"><h2>Module 04 — Công nợ phải trả Nhà cung cấp</h2>
+      <div class="tblwrap"><table>
+        <tr><th>Invoice</th><th>NCC / PO</th><th>Giá trị</th><th>Đã thanh toán</th><th>Còn phải trả</th><th>Đến hạn</th><th>Trạng thái</th></tr>
+        <tr><td><b>INV-SG-8841</b></td><td>Singapore / PO-2611-07</td><td>$24.600</td><td>$6.200<div class="bar warn"><i style="width:25%"></i></div></td><td><b>$18.400</b></td><td>20/11/2026</td><td><span class="pill p-amber">Thanh toán nhiều lần</span></td></tr>
+        <tr><td><b>INV-DE-2210</b></td><td>Đức / PO-2610-15</td><td>€18.900</td><td>€0</td><td><b>€18.900</b></td><td>11/11/2026</td><td><span class="pill p-red">Quá hạn</span></td></tr>
+        <tr><td><b>INV-SG-8790</b></td><td>Singapore / PO-2610-19</td><td>$28.600</td><td>$8.580 (30%)</td><td><b>$20.020</b></td><td>11/12/2026</td><td><span class="pill p-blue">Chưa đến hạn</span></td></tr>
+      </table></div>
+      <p class="small">Đúng 2 nghiệp vụ khó: <b>1 Invoice thanh toán nhiều lần</b> và <b>1 lần chuyển tiền trả cho nhiều Invoice</b> — đều phân bổ và đối chiếu được từng dòng, kèm tham chiếu chứng từ chuyển tiền / sao kê.</p>
+    </div>
+  </section>
+
+  <!-- DOCS -->
+  <section id="tab-docs" class="hide">
+    <div class="cols2">
+      <div class="card">
+        <h2>Module 05 — Checklist hồ sơ theo từng đơn hàng</h2>
+        <p class="sub">Đơn <b>TVPE-118 — Khách A</b> (khách này yêu cầu CO/CQ <b>bản gốc</b>). Mỗi khách / dự án có bộ hồ sơ riêng, không áp 1 mẫu cho tất cả.</p>
+        <div class="check"><span>✅ PO + PO Confirmation</span><span class="pill p-green">Đã có</span></div>
+        <div class="check"><span>✅ Commercial Invoice + Packing List</span><span class="pill p-green">Đã có</span></div>
+        <div class="check"><span>✅ Vận đơn (B/L) + Tờ khai hải quan</span><span class="pill p-green">Đã có</span></div>
+        <div class="check"><span>⏳ CO — bản gốc</span><span class="pill p-amber">Còn thiếu</span></div>
+        <div class="check"><span>✅ CQ + Catalogue + Datasheet</span><span class="pill p-green">Đã có</span></div>
+        <div class="check"><span>⬜ Biên bản bàn giao + Phiếu xuất kho</span><span class="pill p-gray">Chưa gửi khách</span></div>
+        <p class="small" style="margin-top:8px">Trạng thái từng chứng từ: Bắt buộc / Không bắt buộc • Đã có / Còn thiếu • Đã gửi khách / Chưa gửi • Bản gốc / Bản sao.</p>
+      </div>
+      <div class="card">
+        <h2>Lưu trữ tập trung trên Drive công ty</h2>
+        <div class="folder">📁 TVPE — Shared Drive (của công ty)<br>├─ 📁 01_MASTER_DATA<br>├─ 📁 02_PURCHASE_ORDER / TVPE-118 / …<br>├─ 📁 03_IMPORT_COST<br>├─ 📁 04_WAREHOUSE<br>├─ 📁 05_SUPPLIER_AP<br>├─ 📁 06_DOCUMENTS<br>├─ 📁 07_MANAGEMENT_REPORT<br>└─ 📁 08_SALES_PRICE_PORTAL <span style="color:#FDBA74">(Sales chỉ vào đây)</span></div>
+        <p class="small" style="margin-top:10px">Mỗi PO / đơn hàng có 1 thư mục riêng theo quy tắc đặt tên thống nhất, link thẳng từ bảng quản trị. Không còn phụ thuộc máy tính của 1 người — đổi máy, đổi nhân sự vẫn truy cập được theo quyền công ty.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICE -->
+  <section id="tab-price" class="hide">
+    <div class="card">
+      <h2>Module 07 — Bảng giá dành cho Sales</h2>
+      <p class="sub">Sales tra theo Model + nhóm khách hàng. Giá Project / Special phải qua phê duyệt — hệ thống lưu người duyệt, ngày duyệt và lịch sử thay đổi. Báo giá dưới giá sàn sẽ bị cảnh báo.</p>
+      <div class="search"><input id="q" placeholder="🔍 Gõ model, ví dụ: PT-500, van, biến tần…" oninput="filterPrice()"><button class="btn2" onclick="document.getElementById('q').value='';filterPrice()">Xóa lọc</button></div>
+      <div class="tblwrap"><table id="priceTbl">
+        <tr><th>Model</th><th>Mô tả</th><th>Trading Price</th><th>End User Price</th><th>Project Price</th><th>Hiệu lực</th></tr>
+        <tr><td><b>PT-500</b></td><td>Cảm biến áp suất</td><td>11.900.000đ</td><td>13.500.000đ</td><td><span class="pill p-blue">Theo dự án • cần duyệt</span></td><td>01/11 – 31/12/2026</td></tr>
+        <tr><td><b>CV-200</b></td><td>Van điều khiển</td><td>18.400.000đ</td><td>20.900.000đ</td><td>17.200.000đ ✅ Đã duyệt</td><td>01/11 – 31/12/2026</td></tr>
+        <tr><td><b>VFD-75</b></td><td>Biến tần 7.5kW</td><td>24.600.000đ</td><td>27.800.000đ</td><td><span class="pill p-blue">Theo dự án • cần duyệt</span></td><td>01/11 – 31/12/2026</td></tr>
+        <tr><td><b>LT-300</b></td><td>Cảm biến mức</td><td>6.800.000đ</td><td>7.900.000đ</td><td>6.300.000đ ✅ Đã duyệt</td><td>01/10 – 30/11/2026</td></tr>
+      </table></div>
+      <div class="alert" style="margin-top:10px">⚠️ <b>Ví dụ cảnh báo giá sàn:</b> nếu Sales nhập giá báo khách <b>11.200.000đ</b> cho PT-500 (dưới giá sàn 11.500.000đ) → hệ thống báo đỏ và yêu cầu gửi phê duyệt, không cho xuất báo giá như giá thường.</div>
+      <p class="small internalOnly">🔒 Phần <b>chỉ nội bộ thấy</b>: giá mua, chiết khấu hãng, giá vốn và công nợ của các model trên nằm ở file nội bộ riêng — bảng này được xuất sang Portal Sales nên dù Sales mở file cũng không lần ra được.</p>
+    </div>
+  </section>
+
+  <!-- ARCH -->
+  <section id="tab-arch" class="hide">
+    <div class="cols2">
+      <div class="card">
+        <h2>Kiến trúc đề xuất — Google Sheets + Drive</h2>
+        <p class="sub">Đúng định hướng team đã chọn: dễ dùng, quản lý tập trung, bảo mật tốt hơn và <b>không tốn phí duy trì phần mềm</b> (chỉ dùng tài khoản Google của công ty).</p>
+        <div class="check"><span><b>File nội bộ (3 người mua hàng / quản trị)</b><br><span class="small">Master Data • PO • Giá vốn • Kho • Công nợ • Hồ sơ</span></span><span class="pill p-red">Kín</span></div>
+        <div class="check"><span><b>File / Portal Sales (tách riêng)</b><br><span class="small">Chỉ Trading / End User / Project đã duyệt + catalogue</span></span><span class="pill p-green">Sales xem</span></div>
+        <div class="check"><span><b>Google Shared Drive của công ty</b><br><span class="small">Chủ sở hữu là công ty, có ít nhất 2 admin — không phụ thuộc 1 cá nhân</span></span><span class="pill p-blue">Tập trung</span></div>
+        <div class="check"><span><b>Sao lưu + lịch sử</b><br><span class="small">Tự sao lưu định kỳ, xem lịch sử chỉnh sửa, khôi phục khi sửa / xóa nhầm</span></span><span class="pill p-gray">An toàn</span></div>
+        <h3 style="margin-top:14px">Master Data — nhập 1 lần, dùng khắp nơi</h3>
+        <p class="small">Sản phẩm (&lt;100 mã) • Nhà cung cấp • Khách hàng / nhóm khách • Tiền tệ &amp; tỷ giá • Đơn vị tính • Trạng thái PO / chứng từ • Loại chi phí. Thêm mã mới là các bảng liên quan tự nhận, không sửa công thức ở nhiều nơi. Mã hóa thống nhất: Mã hàng — Mã đơn — Mã PO — Mã lô nhập — Mã chứng từ.</p>
+      </div>
+      <div class="card">
+        <h2>Những điểm tư vấn thêm cho Purchasing</h2>
+        <div class="check"><span><b>1. Đừng chỉ làm file, hãy khóa quy tắc giá vốn với kế toán trước</b><br><span class="small">Thuế NK, phí nào vào giá vốn, GTGT khấu trừ xử lý sao, đối chiếu với MISA thế nào — chốt bằng văn bản 1 trang, tránh mỗi người hiểu 1 kiểu.</span></span></div>
+        <div class="check"><span><b>2. Thêm cột “người phụ trách + lần cập nhật cuối” cho từng PO</b><br><span class="small">Team 3 người rất dễ giẫm nhau — nhìn là biết PO đang ở tay ai, cập nhật lần cuối khi nào.</span></span></div>
+        <div class="check"><span><b>3. Đặt ngưỡng cảnh báo riêng cho team nhỏ</b><br><span class="small">ETA chậm ≥3 ngày, công nợ còn ≤7 ngày đến hạn, Credit dùng ≥80% — cảnh báo sớm, không cần báo cáo dài.</span></span></div>
+        <div class="check"><span><b>4. Chưa cần tích hợp MISA ở giai đoạn 1</b><br><span class="small">Chỉ cần thống nhất mã + kỳ đối chiếu xuất dữ liệu sang kế toán. Tích hợp sâu ngay sẽ làm chậm và phức tạp — để giai đoạn 2 khi quy trình đã ổn.</span></span></div>
+        <div class="check"><span><b>5. Lộ trình khoảng 1 tuần như team dự kiến là khả thi</b><br><span class="small">Với điều kiện dữ liệu đầu vào (danh mục mã, bảng giá hãng, danh sách PO đang mở, công nợ hiện tại) được chốt ngay ở buổi khảo sát.</span></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Tiêu chí nghiệm thu — demo này đã mô phỏng đủ các ca khó</h2>
+      <p class="small" style="line-height:1.9">✅ 1 PO nhiều model &nbsp;•&nbsp; ✅ 1 model về nhiều đợt &nbsp;•&nbsp; ✅ Đổi bảng giá / tỷ giá không đổi lịch sử đã chốt &nbsp;•&nbsp; ✅ Chiết khấu riêng theo PO &nbsp;•&nbsp; ✅ Phân bổ chi phí theo giá trị / số lượng / trọng lượng &nbsp;•&nbsp; ✅ 1 Invoice trả nhiều lần &nbsp;•&nbsp; ✅ 1 lần chuyển tiền trả nhiều Invoice &nbsp;•&nbsp; ✅ Sales không thấy giá vốn &nbsp;•&nbsp; ✅ Đổi máy / đổi người vẫn vào được dữ liệu công ty &nbsp;•&nbsp; ✅ Sửa nhầm có lịch sử để khôi phục</p>
+    </div>
+  </section>
+
+  <footer>
+    DEMO mô phỏng giao diện &amp; logic — dữ liệu là dữ liệu mẫu, không phải dữ liệu thật của TVPE.<br>
+    Bản chính thức sẽ chạy trên <b>Google Sheets + Google Drive của công ty</b> (dữ liệu thuộc sở hữu công ty, không phí duy trì phần mềm), có phân quyền thật, công thức thật và bàn giao hướng dẫn sử dụng.<br>
+    Bấm nút <b>Sales</b> ở góc trên để kiểm tra phân quyền trước khi quyết định.
+  </footer>
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('section[id^="tab-"]').forEach(s=>s.classList.add('hide'));
+  document.getElementById('tab-'+id).classList.remove('hide');
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function setRole(r){
+  const sales = r==='sales';
+  document.getElementById('roleInternal').classList.toggle('on',!sales);
+  document.getElementById('roleSales').classList.toggle('on',sales);
+  document.getElementById('salesBanner').classList.toggle('hide',!sales);
+  document.getElementById('internalBanner').classList.toggle('hide',sales);
+  document.getElementById('dashSalesCard').classList.toggle('hide',!sales);
+  document.querySelectorAll('.internalOnly').forEach(e=>e.classList.toggle('hide',sales));
+  document.querySelectorAll('[data-internal]').forEach(b=>b.classList.toggle('locked',sales));
+  if(sales){ go('price'); alert('Chế độ Sales: các mục Giá vốn, PO chi tiết và Công nợ NCC đã được tách khỏi giao diện này. Sales chỉ xem Bảng giá bán, catalogue và tồn khả dụng.'); }
+  else { go('dash'); }
+}
+function fmt(n){return Math.round(n).toLocaleString('vi-VN')+'đ'}
+function calc(){
+  const list=+document.getElementById('listPrice').value||0;
+  const d1=+document.getElementById('disc1').value||0;
+  const d2=+document.getElementById('disc2').value||0;
+  const fx=+document.getElementById('fx').value||0;
+  const landed=+document.getElementById('landed').value||0;
+  const qty=50;
+  const buyUsd=list*(1-d1/100)*(1-d2/100);
+  const buyVnd=buyUsd*fx;
+  const alloc=landed/qty;
+  const cost=buyVnd+alloc;
+  document.getElementById('rBuyUsd').textContent='$'+buyUsd.toFixed(2);
+  document.getElementById('rBuyVnd').textContent=fmt(buyVnd);
+  document.getElementById('rAlloc').textContent=fmt(alloc);
+  document.getElementById('rCost').textContent=fmt(cost);
+  document.getElementById('rCost2').textContent=fmt(cost);
+  const expected=9180000; const diff=(cost-expected)/expected*100;
+  document.getElementById('rDiff').textContent=(diff>=0?'+':'')+diff.toFixed(1)+'% so với dự kiến';
+  const a=document.getElementById('alloc').value;
+  document.getElementById('rNote').textContent='Phân bổ theo '+(a==='value'?'giá trị hàng':a==='qty'?'số lượng':'trọng lượng')+' • Giá list $'+list+' → sau CK '+d1+'% + '+d2+'% → $'+buyUsd.toFixed(2)+' × tỷ giá '+fx.toLocaleString('vi-VN');
+}
+function filterPrice(){
+  const q=document.getElementById('q').value.toLowerCase();
+  document.querySelectorAll('#priceTbl tr').forEach((tr,i)=>{ if(i===0) return; tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none'; });
+}
+calc();
+</script>
+</body>
+</html>
