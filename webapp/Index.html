@@ -9,17 +9,24 @@
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #EEF1F6; color: #1B2A44; }
   .layout { display: flex; min-height: 100vh; }
   .sidebar { width: 268px; flex: 0 0 268px; background: linear-gradient(180deg, #060F24, #0B2341 70%, #0D2B4F); color: #DCE6F2; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 40; }
-  .brand { display: flex; align-items: center; gap: 12px; padding: 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
-  .logo { width: 44px; height: 44px; border-radius: 12px; background: #F97316; color: #fff; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; }
-  .brand h1 { font-size: 20px; color: #fff; } .brand p { font-size: 11px; color: #93A7C4; margin-top: 2px; }
-  .menu-label { font-size: 10.5px; letter-spacing: 1.6px; color: #7E93B3; padding: 16px 20px 8px; }
-  .menu { flex: 1; overflow-y: auto; }
-  .menu a { display: flex; align-items: center; gap: 10px; margin: 2px 8px; padding: 10px 12px; border-radius: 10px; color: #DCE6F2; font-size: 13.5px; cursor: pointer; text-decoration: none; }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,.08); min-height: 76px; }
+  .logo { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; background: #F97316; color: #fff; font-weight: 800; font-size: 21px; display: flex; align-items: center; justify-content: center; }
+  .brand h1 { font-size: 19px; color: #fff; line-height: 1.15; } .brand p { font-size: 11px; color: #93A7C4; margin-top: 2px; }
+  .menu-label { font-size: 10.5px; font-weight: 700; letter-spacing: 1.8px; color: #7E93B3; padding: 18px 22px 7px; text-transform: uppercase; }
+  .menu { overflow-y: auto; }
+  .menu.grow { flex: 1; }
+  .menu a { display: flex; align-items: center; gap: 11px; height: 41px; margin: 2px 10px; padding: 0 11px; border-radius: 10px; color: #DCE6F2; font-size: 13.5px; cursor: pointer; text-decoration: none; }
+  .menu a .ic { width: 27px; height: 27px; flex: 0 0 27px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.09); border-radius: 8px; font-size: 14px; line-height: 1; }
+  .menu a .tx { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .menu a:hover { background: rgba(255,255,255,.07); }
   .menu a.active { background: #F97316; color: #fff; font-weight: 600; }
-  .badge { margin-left: auto; background: #E5484D; color: #fff; border-radius: 20px; font-size: 11px; padding: 1px 8px; font-weight: 700; }
-  .side-foot { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,.08); font-size: 11.5px; color: #93A7C4; line-height: 1.7; }
-  .side-foot a { color: #FFB37E; text-decoration: none; }
+  .menu a.active .ic { background: rgba(255,255,255,.28); }
+  .badge { background: #E5484D; color: #fff; border-radius: 20px; font-size: 11px; padding: 1px 8px; font-weight: 700; }
+  .side-foot { padding: 12px 10px 14px; border-top: 1px solid rgba(255,255,255,.08); }
+  .side-foot .note { font-size: 11px; color: #7E93B3; line-height: 1.6; padding: 2px 12px 8px; }
+  .side-foot a { display: flex; align-items: center; gap: 11px; height: 38px; padding: 0 11px; border-radius: 10px; color: #FFB37E; font-size: 13px; text-decoration: none; }
+  .side-foot a .ic { width: 27px; height: 27px; flex: 0 0 27px; display: flex; align-items: center; justify-content: center; background: rgba(249,115,22,.18); border-radius: 8px; font-size: 14px; }
+  .side-foot a:hover { background: rgba(255,255,255,.07); }
   .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .topbar { background: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #E1E7F0; position: sticky; top: 0; z-index: 30; flex-wrap: wrap; }
   .topbar h2 { font-size: 17px; color: #0B2341; flex: 1; min-width: 160px; }
@@ -37,8 +44,12 @@
   .card h3 { color: #0B2341; font-size: 15.5px; margin-bottom: 6px; }
   .card p.desc { font-size: 13px; color: #5A6B84; margin-bottom: 12px; line-height: 1.6; }
   table { border-collapse: collapse; width: 100%; font-size: 12.5px; min-width: 640px; }
-  th { background: #0B2341; color: #fff; text-align: left; padding: 8px; white-space: nowrap; }
-  td { padding: 7px 8px; border-bottom: 1px solid #E6EBF2; vertical-align: top; }
+  th { background: #0B2341; color: #fff; text-align: left; padding: 9px 10px; white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid #E6EBF2; vertical-align: middle; line-height: 1.45; }
+  td.wide { min-width: 190px; max-width: 300px; }
+  td.notec { min-width: 150px; max-width: 240px; color: #5A6B84; }
+  td.code { white-space: nowrap; font-weight: 600; color: #0B2341; }
+  td.act { white-space: nowrap; }
   tr:nth-child(even) td { background: #F7F9FC; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
@@ -66,6 +77,22 @@
   .hide { display: none !important; }
   .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #0B2341; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; z-index: 99; display: none; box-shadow: 0 4px 18px rgba(0,0,0,.3); max-width: 92vw; }
   #loading { text-align: center; padding: 70px 20px; color: #5A6B84; font-size: 15px; }
+  #printArea { display: none; }
+  .printdoc { font-family: 'Times New Roman', serif; color: #000; font-size: 13.5px; line-height: 1.5; }
+  .printdoc h1 { font-size: 19px; text-align: center; margin: 2px 0; }
+  .printdoc h2 { font-size: 15px; text-align: center; font-weight: normal; font-style: italic; margin-bottom: 10px; }
+  .printdoc table { min-width: 0; font-size: 13px; }
+  .printdoc th { background: #fff; color: #000; border: 1px solid #000; text-align: center; }
+  .printdoc td { border: 1px solid #000; background: #fff !important; }
+  .printdoc .meta td { border: 0; padding: 2.5px 6px; }
+  .signrow { display: flex; margin-top: 34px; text-align: center; }
+  .signrow div { flex: 1; }
+  @page { size: A4; margin: 12mm; }
+  @media print {
+    .layout, .modal, .toast { display: none !important; }
+    #printArea { display: block !important; }
+    body { background: #fff; }
+  }
   .scrim { display: none; }
   @media (max-width: 760px) {
     .sidebar { position: fixed; left: 0; top: 0; transform: translateX(-100%); transition: transform .25s; }
@@ -80,28 +107,32 @@
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="brand"><div class="logo">T</div><div><h1>TVPE</h1><p>Quản trị mua hàng &amp; nhập khẩu</p></div></div>
-    <div class="menu-label">ĐIỀU HÀNH</div>
+    <div class="menu-label">Điều hành</div>
     <nav class="menu">
-      <a data-view="home" class="mitem active">🏠 Trang chủ</a>
-      <a data-view="po" class="mitem">🧾 Đơn hàng &amp; PO</a>
-      <a data-view="giavon" class="mitem">💰 Giá vốn &amp; chi phí NK</a>
-      <a data-view="ton" class="mitem">📦 Kho &amp; tồn kho</a>
-      <a data-view="nx" class="mitem">🔄 Nhập / Xuất kho</a>
-      <a data-view="congno" class="mitem">🏦 Công nợ &amp; thanh toán</a>
-      <a data-view="chungtu" class="mitem">🗂️ Hồ sơ chứng từ</a>
+      <a data-view="home" class="mitem active"><span class="ic">🏠</span><span class="tx">Trang chủ</span></a>
+      <a data-view="po" class="mitem"><span class="ic">🧾</span><span class="tx">Đơn hàng &amp; PO</span></a>
+      <a data-view="giavon" class="mitem"><span class="ic">💰</span><span class="tx">Giá vốn &amp; chi phí NK</span></a>
+      <a data-view="ton" class="mitem"><span class="ic">📦</span><span class="tx">Kho &amp; tồn kho</span></a>
+      <a data-view="nx" class="mitem"><span class="ic">🔄</span><span class="tx">Nhập / Xuất kho</span></a>
+      <a data-view="congno" class="mitem"><span class="ic">🏦</span><span class="tx">Công nợ &amp; thanh toán</span></a>
+      <a data-view="chungtu" class="mitem"><span class="ic">🗂️</span><span class="tx">Hồ sơ chứng từ</span></a>
     </nav>
-    <div class="menu-label">BÁN HÀNG</div>
+    <div class="menu-label">Bán hàng</div>
     <nav class="menu">
-      <a data-view="giaban" class="mitem">🏷️ Bảng giá bán</a>
-      <a data-view="duyet" class="mitem">✅ Phê duyệt giá <span class="badge hide" id="duyetBadge"></span></a>
-      <a data-view="giahang" class="mitem">🏭 Bảng giá hãng</a>
+      <a data-view="giaban" class="mitem"><span class="ic">🏷️</span><span class="tx">Bảng giá bán</span></a>
+      <a data-view="duyet" class="mitem"><span class="ic">✅</span><span class="tx">Phê duyệt giá</span><span class="badge hide" id="duyetBadge"></span></a>
+      <a data-view="giahang" class="mitem"><span class="ic">🏭</span><span class="tx">Bảng giá hãng</span></a>
     </nav>
-    <div class="menu-label">HỆ THỐNG</div>
-    <nav class="menu">
-      <a data-view="master" class="mitem">🗃️ Master Data</a>
-      <a data-view="lichsu" class="mitem">📜 Nhật ký thao tác</a>
+    <div class="menu-label">Hệ thống</div>
+    <nav class="menu grow">
+      <a data-view="master" class="mitem"><span class="ic">🗃️</span><span class="tx">Master Data</span></a>
+      <a data-view="lichsu" class="mitem"><span class="ic">📜</span><span class="tx">Nhật ký thao tác</span></a>
     </nav>
-    <div class="side-foot">Dữ liệu lấy trực tiếp từ Google Sheet của công ty.<br><a id="portalLink" href="#" target="_blank">👔 Mở Portal Sales ↗</a><br><a href="https://hanglex9x-cmyk.github.io/tvpe-purchasing-demo/huong-dan.html" target="_blank">📖 Portal hướng dẫn ↗</a></div>
+    <div class="side-foot">
+      <div class="note">Dữ liệu lấy trực tiếp từ Google Sheet của công ty.</div>
+      <a id="portalLink" href="#" target="_blank"><span class="ic">👔</span><span class="tx">Mở Portal Sales ↗</span></a>
+      <a href="https://hanglex9x-cmyk.github.io/tvpe-purchasing-demo/huong-dan.html" target="_blank"><span class="ic">📖</span><span class="tx">Portal hướng dẫn ↗</span></a>
+    </div>
   </aside>
   <div class="scrim" id="scrim" style="display:none"></div>
   <div class="main">
@@ -121,6 +152,7 @@
 
 <div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
 <div class="toast" id="toast"></div>
+<div id="printArea"></div>
 
 <script>
 var D = null, ROLE = 'internal', USER = localStorage.getItem('tvpe_user') || '';
@@ -174,13 +206,20 @@ function dataTable(tabKey, tab, opts) {
     tab.headers.forEach(function (x, i) {
       if (hideCols.indexOf(i) >= 0) return;
       var v = r[i];
-      var cls = (typeof v === 'number') ? ' class="num"' : '';
+      var hdr = String(x || '');
+      var classes = [];
+      if (typeof v === 'number') classes.push('num');
+      if (/mô tả|tên hàng/i.test(hdr)) classes.push('wide');
+      else if (/ghi chú/i.test(hdr)) classes.push('notec');
+      else if (i === 0) classes.push('code');
+      var disp = v;
+      if (typeof v === 'number' && /\(%\)/.test(hdr) && v > 0 && v <= 1) disp = Math.round(v * 10000) / 100;
       var cell = (opts.render && opts.render(i, v, r)) || null;
-      h += '<td' + cls + '>' + (cell !== null ? cell : fmtN(v)) + '</td>';
+      h += '<td' + (classes.length ? ' class="' + classes.join(' ') + '"' : '') + '>' + (cell !== null ? cell : fmtN(disp)) + '</td>';
     });
     if (ROLE === 'internal' && !opts.noActions) {
       var row = r[r.length - 1];
-      h += '<td style="white-space:nowrap"><button class="btn sm edit" onclick="openEdit(\'' + tabKey + '\',' + row + ')">✏️ Sửa</button> <button class="btn sm del" onclick="doDelete(\'' + tabKey + '\',' + row + ')">🗑️ Xóa</button></td>';
+      h += '<td class="act"><button class="btn sm edit" onclick="openEdit(\'' + tabKey + '\',' + row + ')">✏️ Sửa</button> <button class="btn sm del" onclick="doDelete(\'' + tabKey + '\',' + row + ')">🗑️ Xóa</button></td>';
     }
     h += '</tr>';
   });
@@ -250,7 +289,13 @@ function doDelete(tabKey, row) {
   var r = null;
   tab.rows.forEach(function (x) { if (x[x.length - 1] === row) r = x; });
   var label = r ? String(r[0]) + ' — ' + String(r[2] || r[1] || '') : ('dòng ' + row);
-  if (!confirm('Xóa hẳn dòng này?\n' + label + '\n\nThao tác xóa không khôi phục bằng nút Undo — chỉ khôi phục được qua Lịch sử phiên bản của Google Sheet.')) return;
+  var h = '<h3>🗑️ Xóa dòng này?</h3><p style="font-size:14px;line-height:1.6"><b>' + esc(label) + '</b></p>'
+    + '<p style="font-size:13px;color:#5A6B84;line-height:1.6;margin-top:8px">Dòng sẽ bị xóa khỏi Google Sheet và thao tác được ghi vào Nhật ký kèm tên của bạn. Khi cần khôi phục, dùng Lịch sử phiên bản của Google Sheet.</p>'
+    + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Hủy</button><button class="btn del" onclick="submitDelete(\'' + tabKey + '\',' + row + ')">🗑️ Xóa hẳn</button></div>';
+  showModal(h);
+}
+function submitDelete(tabKey, row) {
+  closeModal();
   run('deleteRow', [tabKey, row]);
 }
 function showModal(h) { document.getElementById('mbox').innerHTML = h; document.getElementById('modal').classList.add('open'); }
@@ -262,20 +307,25 @@ var VIEWS = {
   home: function () {
     var k = D.kpi;
     var h = '';
-    var chuaNhan = Number(k['SL còn thiếu (đang chờ hàng về)']) || 0;
+    var chuaNhan = Number(k['Tổng SL còn thiếu (chưa về đủ)']) || 0;
     var choDuyet = D.duyet.rows.filter(function (r) { return r[8] === 'Chờ duyệt'; }).length;
     if (chuaNhan > 0) h += '<div class="alert">⏰ Còn <b>' + chuaNhan + ' sản phẩm</b> đã đặt mà chưa về đủ — kiểm tra mục Đơn hàng &amp; PO.' + (choDuyet ? ' Có <b>' + choDuyet + ' yêu cầu giá</b> đang chờ duyệt.' : '') + '</div>';
     h += '<div class="kpis">'
-      + '<div class="kpi red"><div class="lbl">Công nợ còn phải trả</div><div class="val">' + fmtN(k['Công nợ còn phải trả (VND)']) + ' đ</div><div class="sub">Quá hạn: ' + fmtN(k['Trong đó quá hạn (VND)']) + ' đ</div></div>'
-      + '<div class="kpi orange"><div class="lbl">Giá trị PO tháng này</div><div class="val">' + fmtN(k['Giá trị PO tháng này (VND)']) + ' đ</div><div class="sub">PO đang thực hiện: ' + fmtN(k['PO đang thực hiện']) + ' · Còn thiếu: ' + fmtN(k['SL còn thiếu (đang chờ hàng về)']) + ' SP</div></div>'
-      + '<div class="kpi teal"><div class="lbl">Tồn khả dụng toàn kho</div><div class="val">' + fmtN(k['Tồn khả dụng toàn kho']) + ' SP</div><div class="sub">Đang về: ' + fmtN(k['Đang trên đường về']) + ' SP</div></div>'
+      + '<div class="kpi red"><div class="lbl">Công nợ còn phải trả</div><div class="val">' + fmtN(k['Tổng công nợ còn phải trả (VND)']) + ' đ</div><div class="sub">Invoice quá hạn: ' + fmtN(k['Invoice quá hạn']) + ' · Sắp đến hạn: ' + fmtN(k['Invoice sắp đến hạn (≤7 ngày)']) + '</div></div>'
+      + '<div class="kpi orange"><div class="lbl">Giá trị PO tháng này</div><div class="val">' + fmtN(k['Giá trị PO đặt trong tháng này (VND)']) + ' đ</div><div class="sub">PO đang thực hiện: ' + fmtN(k['PO đang thực hiện']) + ' · Còn thiếu: ' + fmtN(k['Tổng SL còn thiếu (chưa về đủ)']) + ' SP</div></div>'
+      + '<div class="kpi teal"><div class="lbl">Tồn khả dụng toàn kho</div><div class="val">' + fmtN(k['Tổng tồn khả dụng (tất cả mã)']) + ' SP</div><div class="sub">Đã giữ cho dự án: ' + fmtN(k['Tổng hàng đã giữ cho dự án']) + ' SP · Tồn thực tế: ' + fmtN(k['Tổng tồn thực tế (tất cả mã)']) + '</div></div>'
       + '<div class="kpi"><div class="lbl">Hồ sơ còn thiếu chứng từ</div><div class="val">' + fmtN(k['Chứng từ bắt buộc còn thiếu']) + '</div><div class="sub">Xem mục Hồ sơ chứng từ</div></div></div>';
     h += '<div class="card"><h3>🧾 PO đang thực hiện (còn thiếu hàng)</h3>' + dataTable('po', D.po, { hideCols: [1, 16, 20, 21], filter: function (r) { return Number(r[10]) > 0; }, render: function (i, v) { return i === 18 ? tagFor(v) : null; } }) + '</div>';
     h += '<div class="card"><h3>🏦 Công nợ cần chú ý</h3>' + dataTable('congno', D.congno, { hideCols: [13], filter: function (r) { return Number(r[11]) > 0; }, render: function (i, v) { return i === 12 ? tagFor(v) : null; } }) + '</div>';
     return h;
   },
   po: function () {
-    var h = '<div class="toolbar">' + (ROLE === 'internal' ? '<button class="btn" onclick="openPO()">➕ Thêm PO mới</button>' : '') + '<span class="sp"></span><span style="font-size:13px;color:#5A6B84">Mỗi dòng = 1 model trong 1 PO · Sửa/Xóa ở cột Thao tác cuối bảng</span></div>';
+    var pos = [];
+    D.po.rows.forEach(function (r) { if (r[3] && pos.indexOf(r[3]) < 0) pos.push(r[3]); });
+    var h = '<div class="toolbar">' + (ROLE === 'internal' ? '<button class="btn" onclick="openPO()">➕ Thêm PO mới</button>' : '')
+      + '<span style="font-size:13px;color:#5A6B84">In PO:</span><select id="poPrintSel" style="padding:8px 10px;border:1.5px solid #CBD6E4;border-radius:8px;font-size:13.5px">' + pos.map(function (p) { return '<option>' + esc(p) + '</option>'; }).join('') + '</select>'
+      + '<button class="btn navy" onclick="printPO()">🖨️ In / Xuất PDF</button>'
+      + '<span class="sp"></span><span style="font-size:13px;color:#5A6B84">Mỗi dòng = 1 model trong 1 PO · Sửa/Xóa ở cột Thao tác cuối bảng</span></div>';
     h += '<div class="card"><h3>Danh sách dòng PO</h3>' + dataTable('po', D.po, { hideCols: [16, 21], render: function (i, v) { return i === 18 ? tagFor(v) : null; } }) + '</div>';
     return h;
   },
@@ -346,7 +396,13 @@ function bindMasterTabs() {
 }
 function duyet(row, status) {
   if (!needUser()) return;
-  if (!confirm('Xác nhận "' + status + '" cho yêu cầu ở dòng ' + row + '?')) return;
+  var h = '<h3>' + (status === 'Đã duyệt' ? '✔ Duyệt giá' : '✖ Từ chối giá') + '</h3>'
+    + '<p style="font-size:14px;line-height:1.6">Xác nhận <b>' + esc(status) + '</b> cho yêu cầu phê duyệt giá ở dòng ' + row + '?<br><span style="color:#5A6B84;font-size:13px">Quyết định được ghi vào Nhật ký kèm tên người duyệt: <b>' + esc(USER) + '</b></span></p>'
+    + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Hủy</button><button class="btn" onclick="submitDuyet(' + row + ',\'' + status + '\')">Xác nhận</button></div>';
+  showModal(h);
+}
+function submitDuyet(row, status) {
+  closeModal();
   run('setDuyet', [row, status]);
 }
 
@@ -411,6 +467,48 @@ function submitTT() {
   var o = { inv: gv('t_inv'), ncc: gv('t_ncc'), ngay: dstr('t_ngay'), tien: gv('t_tien'), ht: gv('t_ht'), ck: gv('t_ck'), note: gv('t_note') };
   closeModal();
   run('addThanhToan', [o]);
+}
+
+/* ---------- In PO / Xuất PDF (khổ A4, tùy chọn máy in trong hộp thoại in) ---------- */
+function printPO() {
+  var sel = document.getElementById('poPrintSel');
+  if (!sel || !sel.value) { toast('Chưa có PO nào để in'); return; }
+  var poNo = sel.value;
+  var lines = D.po.rows.filter(function (r) { return r[3] === poNo; });
+  if (!lines.length) { toast('Không tìm thấy dòng PO'); return; }
+  var f = lines[0];
+  var nccName = f[5], nccContact = '';
+  D.mncc.rows.forEach(function (n) { if (n[0] === f[5]) { nccName = n[1] + ' (' + n[0] + ')'; nccContact = n[3] || ''; } });
+  var tongVND = 0, tongNT = 0;
+  var rowsHtml = '';
+  lines.forEach(function (r, idx) {
+    var sl = Number(r[8]) || 0, giaMua = Number(r[14]) || 0;
+    var ttNT = sl * giaMua, ttVND = Number(r[17]) || 0;
+    tongNT += ttNT; tongVND += ttVND;
+    rowsHtml += '<tr><td style="text-align:center">' + (idx + 1) + '</td><td>' + esc(r[6]) + '</td><td>' + esc(r[7]) + '</td>'
+      + '<td style="text-align:right">' + fmtN(sl) + '</td><td style="text-align:right">' + fmtN(r[11]) + '</td>'
+      + '<td style="text-align:center">' + fmtN(r[12]) + (Number(r[13]) ? ' + ' + fmtN(r[13]) : '') + '</td>'
+      + '<td style="text-align:right">' + fmtN(giaMua) + '</td><td style="text-align:right">' + fmtN(ttNT) + '</td></tr>';
+  });
+  var html = '<div class="printdoc">'
+    + '<table class="meta" style="width:100%"><tr><td style="font-size:16px"><b>TVPE</b></td><td style="text-align:right">Mẫu: PO-A4 · Hệ thống TVPE ERP</td></tr></table>'
+    + '<h1>ĐƠN ĐẶT HÀNG — PURCHASE ORDER</h1>'
+    + '<h2>Số PO / PO No.: ' + esc(poNo) + (f[1] ? ' &nbsp;·&nbsp; Đơn nội bộ / Internal ref: ' + esc(f[1]) : '') + '</h2>'
+    + '<table class="meta" style="width:100%">'
+    + '<tr><td style="width:50%"><b>Nhà cung cấp / Supplier:</b> ' + esc(nccName) + (nccContact ? '<br>Liên hệ / Contact: ' + esc(nccContact) : '') + '</td>'
+    + '<td><b>Ngày đặt / Date:</b> ' + esc(f[4]) + '<br><b>ETA dự kiến:</b> ' + esc(f[19]) + '</td></tr>'
+    + '<tr><td><b>Khách hàng / Dự án:</b> ' + esc(f[2]) + '</td><td><b>Điều khoản thanh toán:</b> ' + esc(f[20]) + '</td></tr>'
+    + '<tr><td><b>Tiền tệ / Currency:</b> ' + esc(f[15]) + ' &nbsp;·&nbsp; <b>Tỷ giá:</b> ' + fmtN(f[16]) + '</td><td><b>Người phụ trách:</b> ' + esc(f[22]) + '</td></tr></table>'
+    + '<table style="margin-top:10px"><tr><th style="width:36px">STT</th><th>Mã hàng</th><th>Mô tả / Description</th><th>SL</th><th>Giá list</th><th>CK (%)</th><th>Giá mua</th><th>Thành tiền (' + esc(f[15]) + ')</th></tr>'
+    + rowsHtml
+    + '<tr><td colspan="7" style="text-align:right"><b>TỔNG CỘNG / TOTAL (' + esc(f[15]) + ')</b></td><td style="text-align:right"><b>' + fmtN(tongNT) + '</b></td></tr>'
+    + '<tr><td colspan="7" style="text-align:right"><b>TỔNG CỘNG QUY ĐỔI (VND)</b></td><td style="text-align:right"><b>' + fmtN(tongVND) + '</b></td></tr></table>'
+    + '<p style="margin-top:10px">Ghi chú: Giá mua đã gồm chiết khấu theo thỏa thuận. Hàng hóa giao theo ETA và điều khoản thanh toán nêu trên; chứng từ kèm theo gồm Invoice, Packing List, C/O và vận đơn theo yêu cầu của bên mua.</p>'
+    + '<div class="signrow"><div><b>BÊN ĐẶT HÀNG / BUYER</b><br>(Ký, ghi rõ họ tên)<br><br><br><br>' + esc(f[22]) + '</div><div><b>BÊN CUNG CẤP / SUPPLIER</b><br>(Ký, ghi rõ họ tên)</div></div>'
+    + '</div>';
+  document.getElementById('printArea').innerHTML = html;
+  toast('🖨️ Đang mở hộp thoại in — chọn "Lưu thành PDF" để xuất file, hoặc chọn máy in + khổ giấy A4 để in');
+  setTimeout(function () { window.print(); }, 250);
 }
 
 /* ---------- Điều hướng ---------- */
