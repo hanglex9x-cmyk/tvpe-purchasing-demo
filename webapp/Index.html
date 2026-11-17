@@ -8,10 +8,10 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #EEF1F6; color: #1B2A44; }
   .layout { display: flex; min-height: 100vh; }
-  .sidebar { width: 268px; flex: 0 0 268px; background: linear-gradient(180deg, #060F24, #0B2341 70%, #0D2B4F); color: #DCE6F2; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 40; overflow: hidden; }
-  .menu-scroll { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.25) transparent; }
-  .menu-scroll::-webkit-scrollbar { width: 6px; }
-  .menu-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.22); border-radius: 3px; }
+  .sidebar { width: 268px; flex: 0 0 268px; background: linear-gradient(180deg, #060F24, #0B2341 70%, #0D2B4F); color: #DCE6F2; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 40; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: #1D4066 transparent; }
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: #1D4066; border-radius: 3px; }
   .brand { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,.08); min-height: 76px; flex: 0 0 auto; }
   .logo { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; background: #F97316; color: #fff; font-weight: 800; font-size: 21px; display: flex; align-items: center; justify-content: center; }
   .brand h1 { font-size: 19px; color: #fff; line-height: 1.15; } .brand p { font-size: 11px; color: #93A7C4; margin-top: 2px; }
@@ -36,6 +36,18 @@
   .rolebox { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #5A6B84; }
   .rolebox select, .rolebox input { padding: 7px 10px; border: 1.5px solid #CBD6E4; border-radius: 8px; font-size: 13px; font-family: inherit; }
   .rolebox input { width: 130px; }
+  .userchip { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #0B2341; font-weight: 600; }
+  .userchip .role { background: #FFF0D6; color: #9A6206; border-radius: 20px; padding: 2px 10px; font-size: 11.5px; font-weight: 700; }
+  .userchip .role.admin { background: #FDE3E3; color: #B4232A; }
+  .userchip .role.sales { background: #DFF5E9; color: #0B7A4B; }
+  #loginOverlay { position: fixed; inset: 0; background: linear-gradient(160deg, #060F24, #0B2341 60%, #0D2B4F); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #loginOverlay.hide { display: none; }
+  .loginbox { background: #fff; border-radius: 18px; padding: 28px 26px; width: 380px; max-width: 100%; box-shadow: 0 18px 50px rgba(0,0,0,.4); }
+  .loginbox .lg-logo { width: 52px; height: 52px; border-radius: 14px; background: #F97316; color: #fff; font-weight: 800; font-size: 26px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .loginbox h2 { color: #0B2341; font-size: 20px; margin-bottom: 4px; }
+  .loginbox p { color: #5A6B84; font-size: 13px; margin-bottom: 16px; line-height: 1.55; }
+  .loginbox .err { background: #FDECEC; color: #8C1D22; border-radius: 9px; padding: 9px 12px; font-size: 13px; margin-bottom: 12px; display: none; }
+  .loginbox .btn { width: 100%; padding: 12px; font-size: 15px; margin-top: 4px; }
   .content { padding: 20px; }
   .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
   .kpi { background: #fff; border-radius: 14px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(11,35,65,.07); border-top: 4px solid #0B2341; }
@@ -109,7 +121,6 @@
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="brand"><div class="logo">T</div><div><h1>TVPE</h1><p>Quản trị mua hàng &amp; nhập khẩu</p></div></div>
-    <div class="menu-scroll">
     <div class="menu-label">Điều hành</div>
     <nav class="menu">
       <a data-view="home" class="mitem active"><span class="ic">🏠</span><span class="tx">Trang chủ</span></a>
@@ -130,8 +141,8 @@
     <nav class="menu">
       <a data-view="master" class="mitem"><span class="ic">🗃️</span><span class="tx">Master Data</span></a>
       <a data-view="lichsu" class="mitem"><span class="ic">📜</span><span class="tx">Nhật ký thao tác</span></a>
+      <a data-view="users" class="mitem hide" id="menuUsers"><span class="ic">👥</span><span class="tx">Người dùng &amp; phân quyền</span></a>
     </nav>
-    </div>
     <div class="side-foot">
       <div class="note">Dữ liệu lấy trực tiếp từ Google Sheet của công ty.</div>
       <a id="portalLink" href="#" target="_blank"><span class="ic">👔</span><span class="tx">Mở Portal Sales ↗</span></a>
@@ -143,8 +154,9 @@
     <div class="topbar">
       <button class="hamb" id="hamb">☰</button>
       <h2 id="viewTitle">Trang chủ điều hành</h2>
-      <div class="rolebox">👤 <input id="userName" placeholder="Tên của bạn…"><button class="btn grayb sm" id="saveUser">Lưu tên</button></div>
-      <div class="rolebox">Vai trò: <select id="roleSel"><option value="internal">Nội bộ (mua hàng)</option><option value="sales">Sales</option></select></div>
+      <div class="userchip hide" id="userChip">👤 <span id="meName"></span><span class="role" id="meRole"></span></div>
+      <button class="btn grayb hide" id="pwBtn">🔑 Đổi mật khẩu</button>
+      <button class="btn grayb hide" id="logoutBtn">Đăng xuất</button>
       <button class="btn grayb" id="reloadBtn">↻ Tải lại</button>
     </div>
     <div class="content">
@@ -154,13 +166,27 @@
   </div>
 </div>
 
+<div id="loginOverlay">
+  <div class="loginbox">
+    <div class="lg-logo">T</div>
+    <h2>TVPE ERP</h2>
+    <p>Đăng nhập bằng tài khoản được cấp. Mỗi vai trò chỉ thấy đúng dữ liệu của mình — Sales không thấy giá mua và giá vốn.</p>
+    <div class="err" id="loginErr"></div>
+    <div class="fld"><label>Tên đăng nhập</label><input id="lgUser" autocomplete="username" placeholder="vd: admin"></div>
+    <div class="fld"><label>Mật khẩu</label><input id="lgPass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button class="btn" id="loginBtn">Đăng nhập</button>
+  </div>
+</div>
+
 <div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
 <div class="toast" id="toast"></div>
 <div id="printArea"></div>
 
 <script>
-var D = null, ROLE = 'internal', USER = localStorage.getItem('tvpe_user') || '';
-var TITLES = { home: 'Trang chủ điều hành', po: 'Đơn hàng & PO', giavon: 'Giá vốn & chi phí nhập khẩu', ton: 'Kho & tồn kho', nx: 'Nhập / Xuất kho', congno: 'Công nợ & thanh toán', chungtu: 'Hồ sơ chứng từ', giaban: 'Bảng giá bán', duyet: 'Phê duyệt giá bán', giahang: 'Bảng giá hãng (giá mua)', master: 'Master Data', lichsu: 'Nhật ký thao tác theo người dùng' };
+var D = null, ROLE = 'internal', USER = '';
+var TOKEN = localStorage.getItem('tvpe_token') || '', ME = null;
+var PERMS = { cost: true, write: true, del: true, approve: true };
+var TITLES = { home: 'Trang chủ điều hành', po: 'Đơn hàng & PO', giavon: 'Giá vốn & chi phí nhập khẩu', ton: 'Kho & tồn kho', nx: 'Nhập / Xuất kho', congno: 'Công nợ & thanh toán', chungtu: 'Hồ sơ chứng từ', giaban: 'Bảng giá bán', duyet: 'Phê duyệt giá bán', giahang: 'Bảng giá hãng (giá mua)', master: 'Master Data', lichsu: 'Nhật ký thao tác theo người dùng', users: 'Hệ thống — Người dùng & phân quyền' };
 /* Cột được sửa qua app (0-based) — khớp cấu hình phía server */
 var EDIT = {
   po: [1,2,3,4,5,6,8,11,12,13,15,16,18,19,20,22],
@@ -184,16 +210,15 @@ var NUMHINT = ['SL', 'Giá', 'giá', 'Tiền', 'tiền', '%', 'Tỷ giá', 'tỷ
 function esc(s) { return String(s === null || s === undefined ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
 function fmtN(v) { var n = Number(v); return isNaN(n) || v === '' || v === null ? esc(v) : n.toLocaleString('vi-VN'); }
 function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(function () { t.style.display = 'none'; }, 4200); }
-function needUser() {
-  if (USER) return true;
-  toast('⚠️ Hãy nhập TÊN CỦA BẠN ở góc trên rồi bấm "Lưu tên" — mọi thao tác đều ghi nhật ký theo tên người làm.');
-  document.getElementById('userName').focus();
+function needUser() { return !!TOKEN; }
+function authFail(e) {
+  if (e && String(e.message || '').indexOf('AUTH:') === 0) { forceLogin('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.'); return true; }
   return false;
 }
 function run(fn, args, doneMsg) {
-  var args2 = (args || []).slice(); args2.push(USER);
+  var args2 = [TOKEN].concat(args || []);
   google.script.run.withSuccessHandler(function (msg) { toast('✅ ' + (doneMsg || msg)); load(); })
-    .withFailureHandler(function (e) { toast('❌ Lỗi: ' + e.message); })[fn].apply(null, args2);
+    .withFailureHandler(function (e) { if (!authFail(e)) toast('❌ Lỗi: ' + e.message); })[fn].apply(null, args2);
 }
 
 /* ---------- Bảng dữ liệu dùng chung: có nút Sửa / Xóa khi là Nội bộ ---------- */
@@ -202,7 +227,7 @@ function dataTable(tabKey, tab, opts) {
   var hideCols = opts.hideCols || [];
   var h = '<table><tr>';
   tab.headers.forEach(function (x, i) { if (hideCols.indexOf(i) < 0) h += '<th>' + esc(x) + '</th>'; });
-  if (ROLE === 'internal' && !opts.noActions) h += '<th>Thao tác</th>';
+  if ((PERMS.write || PERMS.del) && !opts.noActions) h += '<th>Thao tác</th>';
   h += '</tr>';
   tab.rows.forEach(function (r) {
     if (opts.filter && !opts.filter(r)) return;
@@ -221,9 +246,12 @@ function dataTable(tabKey, tab, opts) {
       var cell = (opts.render && opts.render(i, v, r)) || null;
       h += '<td' + (classes.length ? ' class="' + classes.join(' ') + '"' : '') + '>' + (cell !== null ? cell : fmtN(disp)) + '</td>';
     });
-    if (ROLE === 'internal' && !opts.noActions) {
+    if ((PERMS.write || PERMS.del) && !opts.noActions) {
       var row = r[r.length - 1];
-      h += '<td class="act"><button class="btn sm edit" onclick="openEdit(\'' + tabKey + '\',' + row + ')">✏️ Sửa</button> <button class="btn sm del" onclick="doDelete(\'' + tabKey + '\',' + row + ')">🗑️ Xóa</button></td>';
+      h += '<td class="act">'
+        + (PERMS.write ? '<button class="btn sm edit" onclick="openEdit(\'' + tabKey + '\',' + row + ')">✏️ Sửa</button> ' : '')
+        + (PERMS.del ? '<button class="btn sm del" onclick="doDelete(\'' + tabKey + '\',' + row + ')">🗑️ Xóa</button>' : '')
+        + '</td>';
     }
     h += '</tr>';
   });
@@ -239,7 +267,7 @@ function tagFor(v) {
   return esc(v);
 }
 function addBtn(tabKey, label) {
-  if (ROLE !== 'internal' || ADDTABS.indexOf(tabKey) < 0) return '';
+  if (!PERMS.write || ADDTABS.indexOf(tabKey) < 0) return '';
   return '<button class="btn" onclick="openAdd(\'' + tabKey + '\')">' + (label || '➕ Thêm dòng mới') + '</button>';
 }
 
@@ -326,7 +354,7 @@ var VIEWS = {
   po: function () {
     var pos = [];
     D.po.rows.forEach(function (r) { if (r[3] && pos.indexOf(r[3]) < 0) pos.push(r[3]); });
-    var h = '<div class="toolbar">' + (ROLE === 'internal' ? '<button class="btn" onclick="openPO()">➕ Thêm PO mới</button>' : '')
+    var h = '<div class="toolbar">' + (PERMS.write ? '<button class="btn" onclick="openPO()">➕ Thêm PO mới</button>' : '')
       + '<span style="font-size:13px;color:#5A6B84">In PO:</span><select id="poPrintSel" style="padding:8px 10px;border:1.5px solid #CBD6E4;border-radius:8px;font-size:13.5px">' + pos.map(function (p) { return '<option>' + esc(p) + '</option>'; }).join('') + '</select>'
       + '<button class="btn navy" onclick="printPO()">🖨️ In / Xuất PDF</button>'
       + '<span class="sp"></span><span style="font-size:13px;color:#5A6B84">Mỗi dòng = 1 model trong 1 PO · Sửa/Xóa ở cột Thao tác cuối bảng</span></div>';
@@ -342,12 +370,12 @@ var VIEWS = {
     return '<div class="card"><h3>📦 Tồn kho theo mã hàng</h3><p class="desc">Tồn khả dụng = Tồn thực tế − Đã giữ cho dự án. Bấm Sửa để cập nhật: tồn đầu kỳ, số lượng giữ cho dự án và ghi chú đơn giữ.</p>' + dataTable('ton', D.ton, { render: function (i, v, r) { if (i === 7) { var n = Number(v); return '<b>' + fmtN(v) + '</b>' + (n <= 0 ? ' <span class="tag red">Hết khả dụng</span>' : ''); } return null; } }) + '</div>';
   },
   nx: function () {
-    var h = '<div class="toolbar">' + (ROLE === 'internal' ? '<button class="btn" onclick="openPhieu()">➕ Ghi phiếu nhập / xuất</button>' : '') + '</div>';
+    var h = '<div class="toolbar">' + (PERMS.write ? '<button class="btn" onclick="openPhieu()">➕ Ghi phiếu nhập / xuất</button>' : '') + '</div>';
     h += '<div class="card"><h3>Lịch sử nhập — xuất kho</h3><p class="desc">Phiếu nhập gắn đúng Mã dòng PO sẽ tự cộng vào “SL đã nhận” của PO đó. Phiếu không gắn mã dòng PO = hàng stock.</p>' + dataTable('nx', D.nx, { render: function (i, v) { return i === 1 ? (v === 'Nhập' ? '<span class="tag green">Nhập</span>' : '<span class="tag amber">Xuất</span>') : null; } }) + '</div>';
     return h;
   },
   congno: function () {
-    var h = '<div class="toolbar">' + (ROLE === 'internal' ? '<button class="btn" onclick="openTT()">➕ Ghi thanh toán</button>' : '') + addBtn('congno', '➕ Thêm Invoice công nợ') + '</div>';
+    var h = '<div class="toolbar">' + (PERMS.write ? '<button class="btn" onclick="openTT()">➕ Ghi thanh toán</button>' : '') + addBtn('congno', '➕ Thêm Invoice công nợ') + '</div>';
     h += '<div class="card"><h3>🏦 Công nợ nhà cung cấp (theo Invoice)</h3>' + dataTable('congno', D.congno, { render: function (i, v) { return i === 12 ? tagFor(v) : null; } }) + '</div>';
     h += '<div class="card"><h3>💸 Lịch sử thanh toán</h3><p class="desc">Một Invoice trả nhiều lần → nhiều dòng cùng số Invoice. Một lệnh chuyển tiền trả nhiều Invoice → nhiều dòng cùng mã CK.</p><div class="toolbar">' + addBtn('thanhtoan') + '</div>' + dataTable('thanhtoan', D.thanhtoan) + '</div>';
     return h;
@@ -366,8 +394,8 @@ var VIEWS = {
       var row = r[r.length - 1];
       h += '<tr>';
       D.duyet.headers.forEach(function (x, i) { h += '<td' + (typeof r[i] === 'number' ? ' class="num"' : '') + '>' + (i === 8 ? tagFor(r[i]) : fmtN(r[i])) + '</td>'; });
-      h += '<td style="white-space:nowrap">' + (ROLE === 'internal' ? (r[8] === 'Chờ duyệt' ? '<button class="btn sm" style="background:#0FA06E" onclick="duyet(' + row + ',\'Đã duyệt\')">✔ Duyệt</button> <button class="btn sm del" onclick="duyet(' + row + ',\'Từ chối\')">✖ Từ chối</button>' : '<span style="color:#5A6B84;font-size:12px">Đã xử lý</span>') : '') + '</td>';
-      h += '<td style="white-space:nowrap">' + (ROLE === 'internal' ? '<button class="btn sm edit" onclick="openEdit(\'duyet\',' + row + ')">✏️ Sửa</button> <button class="btn sm del" onclick="doDelete(\'duyet\',' + row + ')">🗑️ Xóa</button>' : '') + '</td></tr>';
+      h += '<td style="white-space:nowrap">' + (PERMS.approve ? (r[8] === 'Chờ duyệt' ? '<button class="btn sm" style="background:#0FA06E" onclick="duyet(' + row + ',\'Đã duyệt\')">✔ Duyệt</button> <button class="btn sm del" onclick="duyet(' + row + ',\'Từ chối\')">✖ Từ chối</button>' : '<span style="color:#5A6B84;font-size:12px">Đã xử lý</span>') : '') + '</td>';
+      h += '<td class="act">' + (PERMS.write ? '<button class="btn sm edit" onclick="openEdit(\'duyet\',' + row + ')">✏️ Sửa</button> ' : '') + (PERMS.del ? '<button class="btn sm del" onclick="doDelete(\'duyet\',' + row + ')">🗑️ Xóa</button>' : '') + '</td></tr>';
     });
     return h + '</table></div>';
   },
@@ -383,10 +411,96 @@ var VIEWS = {
     var rows = D.lichsu.rows.slice().reverse();
     var tab = { headers: D.lichsu.headers, rows: rows };
     return '<div class="card"><h3>📜 Nhật ký thao tác</h3><p class="desc">Mọi thao tác Thêm / Sửa / Xóa / Duyệt giá trên App đều được ghi lại kèm thời gian và tên người thực hiện (mới nhất ở trên).</p>' + dataTable('lichsu', tab, { noActions: true }) + '</div>';
+  },
+  users: function () {
+    setTimeout(loadUsers, 0);
+    return '<div class="card"><h3>👥 Tài khoản đăng nhập</h3><p class="desc">Admin cấp tài khoản theo vai trò: <b>Admin</b> (toàn quyền + duyệt giá + quản lý người dùng) · <b>Mua hàng</b> (xem & nhập liệu, không duyệt giá) · <b>Sales</b> (chỉ xem bảng giá bán + tồn khả dụng, server không gửi dữ liệu giá vốn).</p>'
+      + '<div class="toolbar"><button class="btn" onclick="openAddUser()">➕ Tạo tài khoản</button></div><div id="usersBody">⏳ Đang tải danh sách…</div></div>';
   }
 };
+function permBadges(p) {
+  function b(on, label) { return '<span class="tag ' + (on ? 'green' : 'gray') + '">' + (on ? '✔ ' : '✖ ') + label + '</span> '; }
+  return b(p.cost, 'Giá vốn') + b(p.write, 'Thêm/Sửa') + b(p.del, 'Xóa') + b(p.approve, 'Duyệt giá');
+}
+function loadUsers() {
+  google.script.run.withSuccessHandler(function (list) {
+    window._users = list;
+    var h = '<table><tr><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Quyền chi tiết</th><th>Trạng thái</th><th>Thao tác</th></tr>';
+    list.forEach(function (u) {
+      h += '<tr><td class="code">' + esc(u.username) + '</td><td>' + esc(u.name) + '</td><td>' + esc(u.role) + '</td><td>' + permBadges(u.perms) + '</td><td>' + (u.status === 'Hoạt động' ? '<span class="tag green">Hoạt động</span>' : '<span class="tag red">Đã khóa</span>') + '</td>'
+        + '<td class="act"><button class="btn sm edit" onclick="openEditUser(\'' + esc(u.username) + '\')">✏️ Sửa &amp; phân quyền</button> <button class="btn sm navy" onclick="resetPw(\'' + esc(u.username) + '\')">🔑 Mật khẩu</button> '
+        + (u.status === 'Hoạt động' ? '<button class="btn sm del" onclick="setStatus(\'' + esc(u.username) + '\',false)">Khóa</button>' : '<button class="btn sm" style="background:#0FA06E" onclick="setStatus(\'' + esc(u.username) + '\',true)">Mở khóa</button>') + '</td></tr>';
+    });
+    document.getElementById('usersBody').innerHTML = h + '</table>';
+  }).withFailureHandler(function (e) { if (!authFail(e)) document.getElementById('usersBody').textContent = '❌ ' + e.message; }).listUsers(TOKEN);
+}
+function permChecks(prefix, p) {
+  function c(key, label) { return '<label style="display:flex;gap:8px;align-items:center;font-size:13.5px;font-weight:500;margin:6px 0"><input type="checkbox" id="' + prefix + '_' + key + '"' + (p[key] ? ' checked' : '') + ' style="width:17px;height:17px"> ' + label + '</label>'; }
+  return c('cost', 'Xem giá vốn & công nợ (tắt = chỉ thấy giá bán + tồn khả dụng)') + c('write', 'Thêm / Sửa dữ liệu') + c('del', 'Xóa dữ liệu') + c('approve', 'Duyệt giá bán dự án');
+}
+function readPerms(prefix) {
+  return { cost: document.getElementById(prefix + '_cost').checked, write: document.getElementById(prefix + '_write').checked, del: document.getElementById(prefix + '_del').checked, approve: document.getElementById(prefix + '_approve').checked };
+}
+function presetPerms(role) {
+  if (role === 'Admin') return { cost: true, write: true, del: true, approve: true };
+  if (role === 'Mua hàng') return { cost: true, write: true, del: true, approve: false };
+  return { cost: false, write: false, del: false, approve: false };
+}
+function applyPreset(prefix) {
+  var role = document.getElementById(prefix === 'u' ? 'u_role' : 'e_role').value;
+  var p = presetPerms(role);
+  ['cost', 'write', 'del', 'approve'].forEach(function (k) { document.getElementById(prefix + '_' + k).checked = p[k]; });
+}
+function openAddUser() {
+  var h = '<h3>➕ Tạo tài khoản mới</h3>'
+    + '<div class="fld"><label>Tên đăng nhập *</label><input id="u_name" placeholder="vd: lananh"></div>'
+    + '<div class="fld"><label>Họ tên *</label><input id="u_full" placeholder="vd: Nguyễn Lan Anh"></div>'
+    + '<div class="frow"><div class="fld"><label>Vai trò (chọn để nạp mẫu quyền)</label><select id="u_role" onchange="applyPreset(\'u\')"><option>Mua hàng</option><option>Sales</option><option>Admin</option></select></div>'
+    + '<div class="fld"><label>Mật khẩu tạm *</label><input id="u_pw" placeholder="Ít nhất 6 ký tự"></div></div>'
+    + '<div class="fld"><label>Phân quyền chi tiết</label>' + permChecks('u', presetPerms('Mua hàng')) + '</div>'
+    + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Hủy</button><button class="btn" onclick="submitAddUser()">💾 Tạo tài khoản</button></div>';
+  showModal(h);
+}
+function submitAddUser() {
+  var a = { u: gv('u_name'), n: gv('u_full'), r: gv('u_role'), p: gv('u_pw'), perms: readPerms('u') };
+  closeModal();
+  google.script.run.withSuccessHandler(function (m) { toast('✅ ' + m); loadUsers(); })
+    .withFailureHandler(function (e) { if (!authFail(e)) toast('❌ ' + e.message); }).addUser(TOKEN, a.u, a.n, a.r, a.p, a.perms);
+}
+function openEditUser(username) {
+  var u = null;
+  (window._users || []).forEach(function (x) { if (x.username === username) u = x; });
+  if (!u) { toast('Không tìm thấy tài khoản'); return; }
+  var h = '<h3>✏️ Sửa &amp; phân quyền — ' + esc(username) + '</h3>'
+    + '<div class="fld"><label>Họ tên</label><input id="e_full" value="' + esc(u.name) + '"></div>'
+    + '<div class="fld"><label>Vai trò (chọn để nạp mẫu quyền)</label><select id="e_role" onchange="applyPreset(\'e\')"><option' + (u.role === 'Mua hàng' ? ' selected' : '') + '>Mua hàng</option><option' + (u.role === 'Sales' ? ' selected' : '') + '>Sales</option><option' + (u.role === 'Admin' ? ' selected' : '') + '>Admin</option></select></div>'
+    + '<div class="fld"><label>Phân quyền chi tiết</label>' + permChecks('e', u.perms) + '</div>'
+    + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Hủy</button><button class="btn" onclick="submitEditUser(\'' + esc(username) + '\')">💾 Lưu phân quyền</button></div>';
+  showModal(h);
+}
+function submitEditUser(username) {
+  var n = gv('e_full'), r = gv('e_role'), perms = readPerms('e');
+  closeModal();
+  google.script.run.withSuccessHandler(function (m) { toast('✅ ' + m); loadUsers(); })
+    .withFailureHandler(function (e) { if (!authFail(e)) toast('❌ ' + e.message); }).updateUser(TOKEN, username, n, r, perms);
+}
+function setStatus(username, active) {
+  google.script.run.withSuccessHandler(function (m) { toast('✅ ' + m); loadUsers(); })
+    .withFailureHandler(function (e) { if (!authFail(e)) toast('❌ ' + e.message); }).setUserStatus(TOKEN, username, active);
+}
+function resetPw(username) {
+  var h = '<h3>🔑 Đặt lại mật khẩu — ' + esc(username) + '</h3>'
+    + '<div class="fld"><label>Mật khẩu mới *</label><input id="rp_pw" placeholder="Ít nhất 6 ký tự"></div>'
+    + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Hủy</button><button class="btn" onclick="submitResetPw(\'' + esc(username) + '\')">💾 Đặt lại</button></div>';
+  showModal(h);
+}
+function submitResetPw(username) {
+  var pw = gv('rp_pw'); closeModal();
+  google.script.run.withSuccessHandler(function (m) { toast('✅ ' + m); })
+    .withFailureHandler(function (e) { if (!authFail(e)) toast('❌ ' + e.message); }).resetUserPw(TOKEN, username, pw);
+}
 function giabanTable(salesOnly) {
-  var hide = salesOnly ? [4, 5] : [];
+  var hide = salesOnly ? [9] : [];
   return '<div class="card"><h3>🏷️ Bảng giá bán</h3><div class="toolbar">' + addBtn('giaban') + '</div>' + dataTable('giaban', D.giaban, { hideCols: hide }) + '</div>';
 }
 function bindMasterTabs() {
@@ -517,6 +631,7 @@ function printPO() {
 
 /* ---------- Điều hướng ---------- */
 function show(view) {
+  if (ME && !PERMS.cost && ['giaban', 'ton'].indexOf(view) < 0) view = 'giaban';
   document.querySelectorAll('.mitem').forEach(function (a) { a.classList.toggle('active', a.getAttribute('data-view') === view); });
   document.getElementById('viewTitle').textContent = TITLES[view] || view;
   document.getElementById('app').innerHTML = VIEWS[view]();
@@ -526,35 +641,95 @@ function show(view) {
 document.querySelectorAll('.mitem').forEach(function (a) { a.addEventListener('click', function () { show(a.getAttribute('data-view')); }); });
 document.getElementById('hamb').addEventListener('click', function () { document.getElementById('sidebar').classList.add('open'); document.getElementById('scrim').style.display = 'block'; });
 document.getElementById('scrim').addEventListener('click', function () { document.getElementById('sidebar').classList.remove('open'); this.style.display = 'none'; });
-document.getElementById('roleSel').addEventListener('change', function () {
-  ROLE = this.value;
-  if (D) show(document.querySelector('.mitem.active').getAttribute('data-view'));
-});
 document.getElementById('reloadBtn').addEventListener('click', load);
-var un = document.getElementById('userName'); un.value = USER;
-document.getElementById('saveUser').addEventListener('click', function () {
-  USER = un.value.trim();
-  localStorage.setItem('tvpe_user', USER);
-  toast(USER ? '👤 Đã lưu tên người dùng: ' + USER : 'Đã xóa tên người dùng');
+
+/* ---------- Đăng nhập / đăng xuất / đổi mật khẩu ---------- */
+function forceLogin(msg) {
+  TOKEN = ''; ME = null;
+  localStorage.removeItem('tvpe_token');
+  document.getElementById('userChip').classList.add('hide');
+  document.getElementById('pwBtn').classList.add('hide');
+  document.getElementById('logoutBtn').classList.add('hide');
+  var ov = document.getElementById('loginOverlay');
+  ov.classList.remove('hide');
+  if (msg) { var e = document.getElementById('loginErr'); e.textContent = msg; e.style.display = 'block'; }
+}
+function doLogin() {
+  var u = document.getElementById('lgUser').value.trim();
+  var p = document.getElementById('lgPass').value;
+  var err = document.getElementById('loginErr');
+  err.style.display = 'none';
+  if (!u || !p) { err.textContent = 'Nhập đủ tên đăng nhập và mật khẩu.'; err.style.display = 'block'; return; }
+  var btn = document.getElementById('loginBtn');
+  btn.textContent = '⏳ Đang kiểm tra…'; btn.disabled = true;
+  google.script.run.withSuccessHandler(function (res) {
+    btn.textContent = 'Đăng nhập'; btn.disabled = false;
+    TOKEN = res.token; ME = res;
+    localStorage.setItem('tvpe_token', TOKEN);
+    document.getElementById('loginOverlay').classList.add('hide');
+    load();
+  }).withFailureHandler(function (e) {
+    btn.textContent = 'Đăng nhập'; btn.disabled = false;
+    err.textContent = e.message; err.style.display = 'block';
+  }).login(u, p);
+}
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('lgPass').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+document.getElementById('logoutBtn').addEventListener('click', function () {
+  google.script.run.withSuccessHandler(function () { forceLogin(); }).logout(TOKEN);
+  setTimeout(function () { forceLogin(); }, 800);
 });
+document.getElementById('pwBtn').addEventListener('click', function () {
+  var h = '<h3>🔑 Đổi mật khẩu</h3>'
+    + '<div class="fld"><label>Mật khẩu hiện tại</label><input id="cp_old" type="password"></div>'
+    + '<div class="fld"><label>Mật khẩu mới (ít nhất 6 ký tự)</label><input id="cp_new" type="password"></div>'
+    + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Hủy</button><button class="btn" onclick="submitPw()">💾 Đổi mật khẩu</button></div>';
+  showModal(h);
+});
+function submitPw() {
+  var o = gv('cp_old'), n = gv('cp_new'); closeModal();
+  google.script.run.withSuccessHandler(function (m) { toast('✅ ' + m); })
+    .withFailureHandler(function (e) { if (!authFail(e)) toast('❌ ' + e.message); }).changePassword(TOKEN, o, n);
+}
+function applyRoleUI() {
+  document.getElementById('meName').textContent = ME.name;
+  var r = document.getElementById('meRole');
+  r.textContent = ME.role;
+  r.className = 'role' + (ME.role === 'Admin' ? ' admin' : ME.role === 'Sales' ? ' sales' : '');
+  document.getElementById('userChip').classList.remove('hide');
+  document.getElementById('pwBtn').classList.remove('hide');
+  document.getElementById('logoutBtn').classList.remove('hide');
+  document.getElementById('menuUsers').classList.toggle('hide', ME.role !== 'Admin');
+  var limited = !PERMS.cost;
+  document.querySelectorAll('.mitem').forEach(function (a) {
+    var v = a.getAttribute('data-view');
+    if (v === 'users') return;
+    a.classList.toggle('hide', limited && ['giaban', 'ton'].indexOf(v) < 0);
+  });
+}
 
 function load() {
+  if (!TOKEN) { forceLogin(); return; }
   document.getElementById('loading').classList.remove('hide');
   document.getElementById('app').classList.add('hide');
   google.script.run.withSuccessHandler(function (data) {
-    D = data;
+    D = data; ME = data.me; USER = ME.name;
+    PERMS = ME.perms || PERMS;
+    ROLE = PERMS.cost ? 'internal' : 'sales';
+    applyRoleUI();
     document.getElementById('portalLink').href = D.portal;
     var choDuyet = D.duyet.rows.filter(function (r) { return r[8] === 'Chờ duyệt'; }).length;
     var b = document.getElementById('duyetBadge');
     b.textContent = choDuyet; b.classList.toggle('hide', choDuyet === 0);
     document.getElementById('loading').classList.add('hide');
     document.getElementById('app').classList.remove('hide');
-    show(document.querySelector('.mitem.active').getAttribute('data-view'));
+    var cur = document.querySelector('.mitem.active');
+    show(cur ? cur.getAttribute('data-view') : (!PERMS.cost ? 'giaban' : 'home'));
   }).withFailureHandler(function (e) {
-    document.getElementById('loading').textContent = '❌ Không tải được dữ liệu: ' + e.message;
-  }).getAllData();
+    if (!authFail(e)) document.getElementById('loading').textContent = '❌ Không tải được dữ liệu: ' + e.message;
+  }).getAllData(TOKEN);
 }
-load();
+if (TOKEN) { document.getElementById('loginOverlay').classList.add('hide'); load(); } else { forceLogin(); }
 </script>
 </body>
 </html>
