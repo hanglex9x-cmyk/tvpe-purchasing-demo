@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TVPE ERP — Portal Hướng dẫn sử dụng</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #EEF1F6; color: #1B2A44; }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar { width: 268px; flex: 0 0 268px; background: linear-gradient(180deg, #060F24, #0B2341 70%, #0D2B4F); color: #DCE6F2; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 40; }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .logo { width: 44px; height: 44px; border-radius: 12px; background: #F97316; color: #fff; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; }
+  .brand h1 { font-size: 19px; color: #fff; } .brand p { font-size: 11px; color: #93A7C4; margin-top: 2px; }
+  .menu-label { font-size: 10.5px; letter-spacing: 1.6px; color: #7E93B3; padding: 16px 20px 8px; }
+  .menu { flex: 1; overflow-y: auto; }
+  .menu a { display: block; margin: 2px 8px; padding: 10px 12px; border-radius: 10px; color: #DCE6F2; font-size: 13.5px; text-decoration: none; }
+  .menu a:hover { background: rgba(255,255,255,.07); }
+  .side-foot { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,.08); font-size: 11.5px; color: #93A7C4; line-height: 1.7; }
+  .side-foot a { color: #FFB37E; text-decoration: none; }
+  .main { flex: 1; min-width: 0; }
+  .topbar { background: #0B2341; color: #fff; padding: 14px 22px; border-bottom: 3px solid #F97316; position: sticky; top: 0; z-index: 30; display: flex; gap: 12px; align-items: center; }
+  .topbar h2 { font-size: 17px; flex: 1; }
+  .hamb { display: none; background: none; border: 0; color: #fff; font-size: 22px; cursor: pointer; }
+  .content { padding: 22px; max-width: 980px; }
+  .card { background: #fff; border-radius: 14px; padding: 20px 22px; box-shadow: 0 1px 4px rgba(11,35,65,.07); margin-bottom: 18px; }
+  .card h3 { color: #0B2341; font-size: 16.5px; margin-bottom: 12px; }
+  .card h4 { color: #0B2341; font-size: 14.5px; margin: 14px 0 6px; }
+  .card p, .card li { font-size: 14px; line-height: 1.65; }
+  .card ul, .card ol { padding-left: 20px; }
+  .card li { margin-bottom: 4px; }
+  .btn { display: inline-block; background: #F97316; color: #fff; padding: 10px 16px; border-radius: 9px; font-weight: 600; font-size: 14px; text-decoration: none; margin: 4px 6px 4px 0; }
+  .btn.navy { background: #0B2341; } .btn.teal { background: #0FA06E; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; margin: 8px 0 4px; }
+  .step { flex: 1 1 150px; background: #F4F7FB; border: 1px solid #D8E2EF; border-top: 4px solid #F97316; border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.5; }
+  .step b { color: #0B2341; display: block; margin-bottom: 4px; font-size: 13.5px; }
+  .note { background: #FFF4E0; border-radius: 10px; padding: 12px 15px; font-size: 13.5px; line-height: 1.6; margin: 10px 0; }
+  .note.blue { background: #E7F0FE; } .note.red { background: #FDECEC; }
+  code { background: #EDF1F7; padding: 1px 6px; border-radius: 5px; font-size: 13px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 8px 0; }
+  th { background: #0B2341; color: #fff; text-align: left; padding: 8px 10px; }
+  td { padding: 8px 10px; border-bottom: 1px solid #E6EBF2; }
+  .scrim { display: none; }
+  @media (max-width: 760px) {
+    .sidebar { position: fixed; left: 0; top: 0; transform: translateX(-100%); transition: transform .25s; }
+    .sidebar.open { transform: translateX(0); }
+    .hamb { display: block; }
+    .scrim { display: block; position: fixed; inset: 0; background: rgba(6,15,36,.5); z-index: 35; }
+    .content { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="logo">T</div><div><h1>TVPE</h1><p>Portal Hướng dẫn sử dụng</p></div></div>
+    <div class="menu-label">MỤC LỤC</div>
+    <nav class="menu">
+      <a href="#bat-dau">🚀 1. Bắt đầu — các link cần lưu</a>
+      <a href="#quy-trinh">🔄 2. Quy trình làm việc hằng ngày</a>
+      <a href="#po">🧾 3. Tạo & theo dõi PO</a>
+      <a href="#kho">📦 4. Nhận hàng & kho</a>
+      <a href="#gia-von">💰 5. Chi phí & giá vốn</a>
+      <a href="#cong-no">🏦 6. Công nợ & thanh toán</a>
+      <a href="#gia-ban">🏷️ 7. Bảng giá & phê duyệt giá</a>
+      <a href="#chung-tu">🗂️ 8. Hồ sơ chứng từ</a>
+      <a href="#ma">🔑 9. Quy tắc mã</a>
+      <a href="#phan-quyen">🔐 10. Phân quyền & an toàn</a>
+      <a href="#su-co">🛠️ 11. Xử lý sự cố thường gặp</a>
+    </nav>
+    <div class="side-foot">Hệ thống quản trị mua hàng & nhập khẩu TVPE — dữ liệu nằm trên Google Drive của công ty.</div>
+  </aside>
+  <div class="scrim" id="scrim" style="display:none"></div>
+  <div class="main">
+    <div class="topbar"><button class="hamb" id="hamb">☰</button><h2>Hướng dẫn sử dụng — TVPE ERP</h2></div>
+    <div class="content">
+
+      <div class="card" id="bat-dau">
+        <h3>🚀 1. Bắt đầu — các link cần lưu</h3>
+        <p>Hệ thống có 3 cửa vào. Hãy lưu (bookmark) đúng link theo vai trò của mình:</p>
+        <p style="margin-top:10px">
+          <a class="btn" href="https://script.google.com/macros/s/AKfycbyPt1GU9y6gqNgYtORdUqHvl2fqNamj1P9s0-inQHmnTHoK9NCBgBc2caV8Hx9CbF2mTw/exec" target="_blank">🏭 Mở App ERP (nội bộ)</a>
+          <a class="btn navy" href="https://docs.google.com/spreadsheets/d/1CpytSjhaYifMFo8SSCIEJA9GYKdINLEylXMPGpKSvh4/edit" target="_blank">📊 Mở Google Sheet (nội bộ)</a>
+          <a class="btn teal" href="https://docs.google.com/spreadsheets/d/1bQ-B2fJxBRRq-vYTMGc6BN8WnfMdcSytBUpyqufPSIM/edit" target="_blank">👔 Portal Sales (chỉ giá bán)</a>
+        </p>
+        <table>
+          <tr><th>Người dùng</th><th>Dùng cửa nào</th><th>Thấy được gì</th></tr>
+          <tr><td>Bộ phận mua hàng / quản trị (3 người)</td><td>App ERP + Google Sheet</td><td>Toàn bộ: giá mua, giá vốn, công nợ, PO, kho, chứng từ</td></tr>
+          <tr><td>Sales</td><td>Portal Sales</td><td>Chỉ giá bán (Trading / End User / Project đã duyệt) + tồn khả dụng</td></tr>
+        </table>
+        <div class="note">💡 App ERP và Google Sheet dùng chung một dữ liệu: nhập ở app thì Sheet có ngay và ngược lại. App tiện cho thao tác hằng ngày; Sheet tiện khi cần xem tổng thể, lọc và in.</div>
+      </div>
+
+      <div class="card" id="quy-trinh">
+        <h3>🔄 2. Quy trình làm việc hằng ngày</h3>
+        <div class="flow">
+          <div class="step"><b>Bước 1 — Có nhu cầu</b>Khách xác nhận đơn → tạo Mã đơn nội bộ (TVPE-xxx) trong tab PO.</div>
+          <div class="step"><b>Bước 2 — Đặt hàng</b>Tạo dòng PO cho từng model: số PO + mã hàng + số lượng + giá list + chiết khấu.</div>
+          <div class="step"><b>Bước 3 — Hàng về</b>Ghi phiếu nhập gắn Mã dòng PO → SL đã nhận & tồn kho tự cập nhật.</div>
+          <div class="step"><b>Bước 4 — Giá vốn</b>Nhập chi phí của lô (cước, thuế, phí…) → giá vốn tự phân bổ về từng model.</div>
+          <div class="step"><b>Bước 5 — Thanh toán</b>Ghi Invoice vào Công nợ, ghi thanh toán khi trả tiền → số dư tự trừ.</div>
+          <div class="step"><b>Bước 6 — Bán hàng</b>Sales tra giá ở Portal; giá dự án cần duyệt thì gửi yêu cầu phê duyệt.</div>
+        </div>
+        <div class="note blue">📌 Nguyên tắc vàng: <b>mỗi thông tin chỉ nhập một lần</b> ở đúng nơi của nó — tên hàng lấy từ Master Data, số nhận lấy từ phiếu nhập, giá vốn lấy từ lô nhập. Các màn hình khác tự liên kết, không nhập lại.</div>
+      </div>
+
+      <div class="card" id="po">
+        <h3>🧾 3. Tạo & theo dõi PO</h3>
+        <h4>Tạo dòng PO mới</h4>
+        <ol>
+          <li>Mở App ERP → menu <b>Đơn hàng & PO</b> → nút <b>➕ Thêm PO mới</b> (hoặc thêm dòng trực tiếp trong tab PO của Sheet).</li>
+          <li>Điền: Số PO, Mã đơn nội bộ, Khách/Dự án, Mã NCC, Mã hàng, Số lượng, Giá list, Tiền tệ, Tỷ giá, CK chuẩn %, CK đặc biệt %, ETA, Điều khoản thanh toán.</li>
+          <li>Hệ thống tự tính: Giá mua thực tế, Thành tiền VND. Cột <b>Mã dòng PO</b> tự mang dạng <code>Số PO/Mã hàng</code> — đây là mã khóa dùng khắp hệ thống.</li>
+        </ol>
+        <h4>Theo dõi tiến độ</h4>
+        <ul>
+          <li>Cập nhật cột <b>Trạng thái</b> theo thực tế: Đã đặt PO → Đang sản xuất → Hoàn thành chờ xuất → Đang vận chuyển → Đã về kho.</li>
+          <li><b>SL đã nhận</b> tự cộng từ các phiếu nhập gắn đúng Mã dòng PO; <b>SL còn thiếu</b> = SL đặt − SL đã nhận. Một model về nhiều đợt chỉ cần ghi nhiều phiếu nhập.</li>
+          <li>Trang chủ App tự cảnh báo các dòng PO <b>quá ETA mà vẫn còn thiếu hàng</b>.</li>
+        </ul>
+      </div>
+
+      <div class="card" id="kho">
+        <h3>📦 4. Nhận hàng & kho</h3>
+        <ol>
+          <li>Khi hàng về: App → <b>Nhập / Xuất kho</b> → <b>➕ Ghi phiếu nhập / xuất</b>. Chọn loại <b>Nhập</b>, điền Mã phiếu (PN-xx), <b>Mã dòng PO</b>, Mã hàng, Số lượng.</li>
+          <li>Hàng stock không theo PO: để trống Mã dòng PO, ghi chú rõ nguồn hàng.</li>
+          <li>Khi xuất bán: ghi phiếu <b>Xuất</b> (PX-xx) kèm Khách / Dự án nhận hàng.</li>
+        </ol>
+        <ul>
+          <li>Tab <b>Kho & tồn kho</b> cho biết theo từng mã: tồn thực tế, đã giữ cho dự án, <b>tồn khả dụng</b> (số còn bán được), và số đang về.</li>
+          <li>Hàng giữ cho dự án: nhập ở cột “SL đã giữ” + ghi rõ giữ cho đơn nào. Hệ thống cảnh báo nếu giữ vượt tồn hoặc tồn bị âm.</li>
+        </ul>
+      </div>
+
+      <div class="card" id="gia-von">
+        <h3>💰 5. Chi phí & giá vốn</h3>
+        <ol>
+          <li>Mỗi lô hàng về có một <b>Mã lô</b> (ví dụ <code>L-2611-A</code>). Khai báo lô ở tab <b>Giá vốn</b>: mã lô, số PO, mã hàng, số lượng, giá mua VND/cái, giá vốn dự kiến.</li>
+          <li>Nhập từng khoản chi phí của lô ở tab <b>Chi phí nhập khẩu</b>: cước quốc tế, thuế nhập khẩu, phí hải quan, phí ngân hàng, vận chuyển nội địa, kiểm định… và chọn <b>phương pháp phân bổ</b> cho từng khoản: theo giá trị / theo số lượng / theo trọng lượng.</li>
+          <li>Giá vốn thực tế từng model tự được tính = giá mua + phần chi phí phân bổ. So sánh với giá dự kiến ngay trên cùng dòng.</li>
+        </ol>
+        <div class="note">🔒 Khi lô đã chốt số liệu: đặt trạng thái <b>“Đã chốt 🔒”</b> ở tab Giá vốn. Lô đã chốt không sửa nữa — bảng giá hãng hay tỷ giá mới chỉ áp dụng cho giao dịch mới, không làm thay đổi lịch sử.</div>
+      </div>
+
+      <div class="card" id="cong-no">
+        <h3>🏦 6. Công nợ & thanh toán</h3>
+        <ol>
+          <li>Nhận Invoice từ nhà cung cấp: thêm dòng ở tab <b>Công nợ</b> (số Invoice, ngày, NCC, PO liên quan, giá trị, điều khoản). Ngày đến hạn tự tính theo điều khoản (Net 30/60…).</li>
+          <li>Khi trả tiền: App → Công nợ → <b>➕ Ghi thanh toán</b>, hoặc thêm dòng ở tab Thanh toán: ngày, số Invoice, số tiền, mã lệnh chuyển tiền (CK).</li>
+          <li>Một Invoice trả nhiều lần: ghi nhiều dòng thanh toán cùng số Invoice. Một lệnh chuyển tiền trả nhiều Invoice: ghi nhiều dòng cùng một mã CK.</li>
+        </ol>
+        <ul>
+          <li>Công nợ tự hiển thị: đã trả, còn phải trả, trạng thái 🔴 Quá hạn / 🟠 Sắp đến hạn / 🔵 Chưa đến hạn.</li>
+          <li>Hạn mức Credit của từng nhà cung cấp xem ở Master NCC: hạn mức, đã dùng, còn lại.</li>
+        </ul>
+      </div>
+
+      <div class="card" id="gia-ban">
+        <h3>🏷️ 7. Bảng giá & phê duyệt giá</h3>
+        <ul>
+          <li>Bảng giá bán nằm ở tab <b>Bảng giá bán</b> (nội bộ) và được xuất sang <b>Portal Sales</b> cho Sales tra cứu: Trading Price, End User Price, Project Price đã duyệt, giá sàn, % chiết khấu tối đa Sales được tự giảm.</li>
+          <li>Sales cần giá dự án thấp hơn giá chuẩn: gửi yêu cầu ở tab <b>Phê duyệt giá</b> (hoặc nhờ bộ phận mua hàng tạo) — hệ thống tự so với giá sàn.</li>
+          <li>Quản lý bấm <b>Duyệt / Từ chối</b> ngay trong App (màn Phê duyệt giá). Giá đã duyệt mới được đưa sang bảng giá cho Sales dùng.</li>
+          <li>Bảng giá hãng (giá mua) thay đổi theo thời gian: cập nhật ở tab <b>Bảng giá hãng</b> với ngày hiệu lực — giá mới chỉ áp cho PO mới.</li>
+        </ul>
+      </div>
+
+      <div class="card" id="chung-tu">
+        <h3>🗂️ 8. Hồ sơ chứng từ</h3>
+        <ul>
+          <li>Mỗi đơn/PO có checklist ở tab <b>Chứng từ</b>: loại chứng từ, bắt buộc hay không, đã có / còn thiếu, đã gửi khách chưa, cần bản gốc hay bản sao, link Drive.</li>
+          <li>File gốc lưu trên Google Drive của công ty theo cấu trúc thư mục 01–08 (Master Data, PO, Import Cost, Warehouse, Supplier AP, Documents, Reports, Sales Portal) — Sheet chỉ lưu link và trạng thái.</li>
+          <li>Trang chủ App luôn báo số chứng từ bắt buộc còn thiếu để xử lý trước khi bàn giao khách.</li>
+        </ul>
+      </div>
+
+      <div class="card" id="ma">
+        <h3>🔑 9. Quy tắc mã (dùng thống nhất toàn hệ thống)</h3>
+        <table>
+          <tr><th>Loại mã</th><th>Dạng</th><th>Ví dụ</th></tr>
+          <tr><td>Mã đơn nội bộ</td><td>TVPE-số tăng dần</td><td><code>TVPE-118</code></td></tr>
+          <tr><td>Mã dòng PO</td><td>Số PO / Mã hàng</td><td><code>PO-2611-07/PT-500</code></td></tr>
+          <tr><td>Mã lô nhập</td><td>L-năm tháng-số</td><td><code>L-2611-A</code></td></tr>
+          <tr><td>Phiếu nhập / xuất</td><td>PN-số / PX-số</td><td><code>PN-05</code>, <code>PX-03</code></td></tr>
+          <tr><td>Yêu cầu duyệt giá</td><td>YC-số</td><td><code>YC-002</code></td></tr>
+        </table>
+      </div>
+
+      <div class="card" id="phan-quyen">
+        <h3>🔐 10. Phân quyền & an toàn dữ liệu</h3>
+        <ul>
+          <li><b>Tuyệt đối không chia sẻ file Sheet nội bộ cho Sales</b> — Sales chỉ nhận link Portal Sales. Ẩn sheet không phải là bảo mật.</li>
+          <li>File hệ thống phải nằm trên Drive của công ty, có <b>ít nhất 2 người quản trị</b>; không để hệ thống phụ thuộc vào một tài khoản cá nhân duy nhất.</li>
+          <li>Khi nhân sự nghỉ việc/thay đổi: thu hồi quyền truy cập của tài khoản đó ngay trong phần chia sẻ của Drive.</li>
+          <li>Google Sheets tự lưu <b>lịch sử phiên bản</b>: sửa nhầm có thể khôi phục (mục 11). Ngoài ra nên sao lưu file định kỳ (File → Tạo bản sao) hoặc dùng tính năng sao lưu tự động nếu đã được cài.</li>
+        </ul>
+      </div>
+
+      <div class="card" id="su-co">
+        <h3>🛠️ 11. Xử lý sự cố thường gặp</h3>
+        <table>
+          <tr><th>Tình huống</th><th>Cách xử lý</th></tr>
+          <tr><td>Số liệu trên App chưa cập nhật</td><td>Bấm nút <b>↻ Tải lại</b> trên App; dữ liệu gốc luôn nằm ở Google Sheet.</td></tr>
+          <tr><td>SL đã nhận của PO không tăng</td><td>Kiểm tra phiếu nhập đã gắn đúng <b>Mã dòng PO</b> chưa (phải khớp từng ký tự, kể cả dấu /).</td></tr>
+          <tr><td>Tồn kho bị âm / cảnh báo đỏ</td><td>Kiểm tra lại phiếu xuất: xuất vượt số đang có, hoặc thiếu phiếu nhập của lô hàng đó.</td></tr>
+          <tr><td>Nhập sai số liệu</td><td>Sửa trực tiếp tại dòng đó trong Google Sheet — các tổng hợp tự tính lại. Không xóa dòng của người khác khi chưa hỏi.</td></tr>
+          <tr><td>Xóa nhầm / sửa nhầm nghiêm trọng</td><td>Mở Sheet → File → Lịch sử phiên bản → chọn thời điểm trước khi lỗi → Khôi phục.</td></tr>
+          <tr><td>App không mở được</td><td>Dùng tạm Google Sheet để làm việc; báo lại cho người phụ trách hệ thống.</td></tr>
+          <tr><td>Thêm mã hàng mới</td><td>Thêm 1 dòng ở Master Data (tab Mã hàng) — toàn bộ hệ thống tự nhận diện, không cần sửa công thức.</td></tr>
+        </table>
+        <div class="note blue">📞 Khi cần hỗ trợ: gửi ảnh chụp màn hình chỗ đang lỗi kèm mã đơn/PO liên quan cho người phụ trách hệ thống để được xử lý nhanh nhất.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+  var sb = document.getElementById('sidebar'), sc = document.getElementById('scrim');
+  document.getElementById('hamb').addEventListener('click', function () { sb.classList.add('open'); sc.style.display = 'block'; });
+  sc.addEventListener('click', function () { sb.classList.remove('open'); sc.style.display = 'none'; });
+  var links = document.querySelectorAll('.menu a');
+  for (var i = 0; i < links.length; i++) links[i].addEventListener('click', function () { sb.classList.remove('open'); sc.style.display = 'none'; });
+</script>
+</body>
+</html>
