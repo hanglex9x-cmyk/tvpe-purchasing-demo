@@ -64,6 +64,13 @@
   td.notec { min-width: 150px; max-width: 240px; color: #5A6B84; }
   td.code { white-space: nowrap; font-weight: 600; color: #0B2341; }
   td.act { white-space: nowrap; }
+  .stag { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .stag.blue { background: #E1EEFC; color: #1256A0; }
+  .stag.amber { background: #FFF0D6; color: #9A6206; }
+  .stag.green { background: #DFF5E9; color: #0B7A4B; }
+  .stag.red { background: #FDE3E3; color: #B4232A; }
+  .stag.orange { background: #FFE7D6; color: #B45309; }
+  .stag.gray { background: #EDF1F6; color: #5A6B84; }
   tr:nth-child(even) td { background: #F7F9FC; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
@@ -222,6 +229,18 @@ function run(fn, args, doneMsg) {
 }
 
 /* ---------- Bảng dữ liệu dùng chung: có nút Sửa / Xóa khi là Nội bộ ---------- */
+function isCodeCol(h) { return /mã|số po|số ct|invoice|ngày|eta|đến hạn/i.test(h); }
+function isStatusCol(h) { return /trạng thái|tình trạng/i.test(h); }
+function statusTag(v) {
+  var s = String(v == null ? '' : v);
+  if (!s) return '';
+  var cls = 'gray';
+  if (/quá hạn|chậm|từ chối|thiếu chứng từ|còn thiếu/i.test(s)) cls = 'red';
+  else if (/đủ|hoàn tất|đã duyệt|đã thanh toán|đã về|đã nhận|còn hàng/i.test(s)) cls = 'green';
+  else if (/chờ|một phần/i.test(s)) cls = 'amber';
+  else if (/đang|sản xuất|vận chuyển/i.test(s)) cls = 'blue';
+  return '<span class="stag ' + cls + '">' + esc(s) + '</span>';
+}
 function dataTable(tabKey, tab, opts) {
   opts = opts || {};
   var hideCols = opts.hideCols || [];
@@ -240,10 +259,11 @@ function dataTable(tabKey, tab, opts) {
       if (typeof v === 'number') classes.push('num');
       if (/mô tả|tên hàng/i.test(hdr)) classes.push('wide');
       else if (/ghi chú/i.test(hdr)) classes.push('notec');
-      else if (i === 0) classes.push('code');
+      else if (i === 0 || isCodeCol(hdr)) classes.push('code');
       var disp = v;
       if (typeof v === 'number' && /\(%\)/.test(hdr) && v > 0 && v <= 1) disp = Math.round(v * 10000) / 100;
       var cell = (opts.render && opts.render(i, v, r)) || null;
+      if (cell === null && isStatusCol(hdr) && typeof v === 'string' && v) cell = statusTag(v);
       h += '<td' + (classes.length ? ' class="' + classes.join(' ') + '"' : '') + '>' + (cell !== null ? cell : fmtN(disp)) + '</td>';
     });
     if ((PERMS.write || PERMS.del) && !opts.noActions) {
