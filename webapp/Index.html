@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TVPE ERP — Quản trị mua hàng & nhập khẩu</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #EEF1F6; color: #1B2A44; }
+  .layout { display: flex; min-height: 100vh; }
+  /* Sidebar */
+  .sidebar { width: 268px; flex: 0 0 268px; background: linear-gradient(180deg, #060F24 0%, #0B2341 70%, #0D2B4F 100%); color: #DCE6F2; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 40; }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 18px 18px 14px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .logo { width: 44px; height: 44px; border-radius: 12px; background: #F97316; color: #fff; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; }
+  .brand h1 { font-size: 19px; color: #fff; letter-spacing: .5px; }
+  .brand p { font-size: 11px; color: #93A7C4; margin-top: 2px; }
+  .menu-label { font-size: 10.5px; letter-spacing: 1.6px; color: #7E93B3; padding: 16px 20px 8px; }
+  .menu { flex: 1; overflow-y: auto; padding-bottom: 10px; }
+  .menu button { display: flex; align-items: center; gap: 11px; width: calc(100% - 16px); margin: 2px 8px; padding: 11px 12px; background: transparent; border: 0; border-radius: 10px; color: #DCE6F2; font-size: 14px; cursor: pointer; text-align: left; }
+  .menu button:hover { background: rgba(255,255,255,.07); }
+  .menu button.active { background: #F97316; color: #fff; font-weight: 600; }
+  .menu .badge { margin-left: auto; background: #E5484D; color: #fff; font-size: 11px; font-weight: 700; border-radius: 99px; padding: 1px 8px; }
+  .menu button.active .badge { background: #fff; color: #E5484D; }
+  .side-foot { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,.08); font-size: 11.5px; color: #93A7C4; line-height: 1.6; }
+  .side-foot a { color: #FFB37E; text-decoration: none; }
+  /* Main */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .topbar { background: #0B2341; color: #fff; padding: 13px 22px; display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #F97316; position: sticky; top: 0; z-index: 30; }
+  .topbar h2 { font-size: 17px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hamb { display: none; background: transparent; border: 0; color: #fff; font-size: 22px; cursor: pointer; }
+  .role { display: flex; background: rgba(255,255,255,.12); border-radius: 99px; padding: 3px; }
+  .role button { border: 0; background: transparent; color: #DCE6F2; padding: 6px 13px; border-radius: 99px; font-size: 12.5px; cursor: pointer; }
+  .role button.on { background: #F97316; color: #fff; font-weight: 600; }
+  .btn { background: #F97316; color: #fff; border: 0; border-radius: 9px; padding: 9px 15px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .btn.ghost { background: #fff; color: #0B2341; border: 1px solid #C9D4E4; }
+  .btn.small { padding: 6px 11px; font-size: 12.5px; }
+  .content { padding: 20px 22px 40px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
+  .kpi { background: #fff; border-radius: 14px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(11,35,65,.07); border-top: 4px solid #0B2341; }
+  .kpi.orange { border-top-color: #F97316; } .kpi.red { border-top-color: #E5484D; } .kpi.teal { border-top-color: #0FA06E; }
+  .kpi .lb { font-size: 12px; color: #64748B; letter-spacing: .4px; }
+  .kpi .vl { font-size: 25px; font-weight: 800; color: #0B2341; margin-top: 5px; }
+  .card { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 1px 4px rgba(11,35,65,.07); margin-bottom: 18px; }
+  .card h3 { font-size: 15px; color: #0B2341; margin-bottom: 12px; }
+  .alert { border-radius: 12px; padding: 12px 16px; font-size: 13.5px; margin-bottom: 10px; line-height: 1.55; }
+  .alert.red { background: #FDECEC; color: #8C1D18; } .alert.orange { background: #FFF4E0; color: #7A4A00; } .alert.blue { background: #E7F0FE; color: #123B73; }
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th { background: #0B2341; color: #fff; text-align: left; padding: 9px 10px; white-space: nowrap; font-weight: 600; }
+  td { padding: 8px 10px; border-bottom: 1px solid #E6EBF2; white-space: nowrap; }
+  tr:nth-child(even) td { background: #F4F7FB; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 12px; font-weight: 600; background: #E7F0FE; color: #123B73; }
+  .pill.red { background: #FDECEC; color: #B3261E; } .pill.orange { background: #FFF4E0; color: #9A6200; } .pill.green { background: #E2F4EA; color: #137333; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: 13px; }
+  .bar-row .nm { width: 190px; flex: 0 0 190px; color: #33475E; }
+  .bar-track { flex: 1; background: #EDF1F7; border-radius: 8px; height: 20px; position: relative; }
+  .bar { height: 20px; border-radius: 8px; background: #E5484D; }
+  .bar.b2 { background: #94A9C4; } .bar.b1 { background: #F97316; }
+  .bar-row .amt { width: 130px; text-align: right; font-weight: 700; color: #0B2341; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .modal-bg { position: fixed; inset: 0; background: rgba(6,15,36,.55); display: none; align-items: center; justify-content: center; z-index: 90; padding: 14px; }
+  .modal { background: #fff; border-radius: 16px; width: 560px; max-width: 100%; max-height: 92vh; overflow-y: auto; padding: 22px; }
+  .modal h3 { color: #0B2341; margin-bottom: 14px; }
+  .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .fld { margin-bottom: 11px; } .fld label { display: block; font-size: 12.5px; color: #64748B; margin-bottom: 4px; }
+  .fld input, .fld select { width: 100%; padding: 9px 10px; border: 1px solid #C9D4E4; border-radius: 9px; font-size: 14px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #0B2341; color: #fff; padding: 12px 20px; border-radius: 99px; font-size: 14px; display: none; z-index: 99; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+  .loading { text-align: center; padding: 70px 20px; color: #64748B; font-size: 15px; }
+  .scrim { display: none; }
+  @media (max-width: 760px) {
+    .sidebar { position: fixed; left: 0; top: 0; transform: translateX(-100%); transition: transform .25s; }
+    .sidebar.open { transform: translateX(0); }
+    .hamb { display: block; }
+    .scrim { display: block; position: fixed; inset: 0; background: rgba(6,15,36,.5); z-index: 35; }
+    .content { padding: 14px; } .bar-row .nm { width: 120px; flex-basis: 120px; } .bar-row .amt { width: 96px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="logo">T</div><div><h1>TVPE</h1><p>ERP Mua hàng &amp; Nhập khẩu</p></div></div>
+    <div class="menu-label">THANH CÔNG CỤ</div>
+    <nav class="menu" id="menu"></nav>
+    <div class="side-foot">Dữ liệu thật từ Google Sheet của công ty.<br><a href="#" id="sheetLink" target="_blank">Mở Google Sheet</a> • <a href="#" id="portalLink" target="_blank">Portal Sales</a></div>
+  </aside>
+  <div class="scrim" id="scrim" style="display:none"></div>
+  <div class="main">
+    <div class="topbar">
+      <button class="hamb" id="hamb">☰</button>
+      <h2 id="modTitle">Trang chủ</h2>
+      <div class="role">
+        <button id="roleIn" class="on">Nội bộ</button>
+        <button id="roleSales">Sales</button>
+      </div>
+      <button class="btn small ghost" id="btnReload">↻ Tải lại</button>
+    </div>
+    <div class="content" id="content"><div class="loading">⏳ Đang tải dữ liệu từ Google Sheet…</div></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+var SHEET_URL = 'https://docs.google.com/spreadsheets/d/1CpytSjhaYifMFo8SSCIEJA9GYKdINLEylXMPGpKSvh4/edit';
+var D = null, role = 'internal', curView = 'home';
+
+var VIEWS = [
+  { id: 'home',    icon: '🏠', name: 'Trang chủ' },
+  { id: 'po',      icon: '🧾', name: 'Đơn hàng & PO', internal: true },
+  { id: 'giavon',  icon: '💰', name: 'Giá vốn nhập khẩu', internal: true },
+  { id: 'ton',     icon: '📦', name: 'Kho & tồn kho' },
+  { id: 'congno',  icon: '🏦', name: 'Công nợ NCC', internal: true },
+  { id: 'chungtu', icon: '🗂️', name: 'Hồ sơ chứng từ', internal: true },
+  { id: 'giaban',  icon: '🏷️', name: 'Bảng giá bán' },
+  { id: 'duyet',   icon: '✅', name: 'Phê duyệt giá', internal: true, badge: 'duyetCho' },
+  { id: 'chiphi',  icon: '🚢', name: 'Chi phí nhập khẩu', internal: true },
+  { id: 'master',  icon: '📚', name: 'Master Data', internal: true }
+];
+var TITLES = { home: 'Trang chủ — Tổng quan', po: 'Đơn hàng & PO', giavon: 'Giá vốn nhập khẩu (Landed Cost)', ton: 'Kho & tồn kho', congno: 'Công nợ nhà cung cấp', chungtu: 'Hồ sơ chứng từ', giaban: 'Bảng giá bán', duyet: 'Phê duyệt giá dự án', chiphi: 'Chi phí nhập khẩu & phân bổ', master: 'Master Data' };
+
+var COLS = {
+  po:      { all: [0,1,2,3,4,9,12,15,16,17,18,19,21] },
+  giavon:  { all: [0,1,2,3,4,8,9,10,11,12,15] },
+  ton:     { all: [0,1,2,3,4,5,6,7,8,9], sales: [0,1,2,7,8,9] },
+  congno:  { all: [0,1,2,3,7,8,9,11,12] },
+  chungtu: { all: [0,1,2,3,4,5,6,7,8] },
+  giaban:  { all: [0,1,2,3,4,5,6,7,8,10], sales: [0,1,2,4,5,6,7,8,10] },
+  duyet:   { all: [0,1,2,3,4,5,6,7,8,9,10] },
+  chiphi:  { all: [0,1,2,3,4] }
+};
+var PCT_COLS = { giavon: [12] };
+
+function fmt(v) {
+  if (v === null || v === undefined || v === '') return '';
+  if (typeof v === 'number') return Math.abs(v) >= 100 ? Math.round(v).toLocaleString('vi-VN') : v;
+  return v;
+}
+function fmtPct(v) { return (v === '' || v === null || v === undefined) ? '' : (Number(v) * 100).toFixed(1).replace('.', ',') + '%'; }
+function esc(s) { return String(s === null || s === undefined ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+function pill(txt) {
+  var t = String(txt || ''), cls = '';
+  if (t.indexOf('Quá hạn') >= 0 || t.indexOf('Chậm') >= 0 || t.indexOf('Dưới giá sàn') >= 0 || t.indexOf('Thiếu') >= 0 && t.indexOf('Đủ') < 0) cls = 'red';
+  else if (t.indexOf('Sắp') >= 0 || t.indexOf('Chờ') >= 0 || t.indexOf('một phần') >= 0) cls = 'orange';
+  else if (t.indexOf('Đã') >= 0 || t.indexOf('Đạt') >= 0 || t.indexOf('Đúng') >= 0 || t.indexOf('Trên giá sàn') >= 0 || t.indexOf('Đủ') >= 0) cls = 'green';
+  return '<span class="pill ' + cls + '">' + esc(t) + '</span>';
+}
+function isStatusHeader(h) { return /trạng thái|cảnh báo|so với|đánh giá/i.test(h); }
+
+function renderMenu() {
+  var cho = D ? D.duyet.rows.filter(function (r) { return r[8] === 'Chờ duyệt'; }).length : 0;
+  var html = '';
+  VIEWS.forEach(function (v) {
+    if (v.internal && role === 'sales') return;
+    html += '<button data-view="' + v.id + '" class="' + (curView === v.id ? 'active' : '') + '">' + v.icon + ' ' + v.name +
+      (v.badge && cho ? '<span class="badge">' + cho + '</span>' : '') + '</button>';
+  });
+  document.getElementById('menu').innerHTML = html;
+  var btns = document.querySelectorAll('#menu button');
+  for (var i = 0; i < btns.length; i++) btns[i].addEventListener('click', function () { go(this.getAttribute('data-view')); });
+}
+function go(v) {
+  curView = v;
+  document.getElementById('modTitle').textContent = TITLES[v];
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('scrim').style.display = 'none';
+  renderMenu(); render();
+}
+
+function tableHtml(tabKey, dataObj, extraAction) {
+  var cfg = COLS[tabKey];
+  var cols = (role === 'sales' && cfg.sales) ? cfg.sales : cfg.all;
+  var pcts = PCT_COLS[tabKey] || [];
+  var h = '<div class="tbl-wrap"><table><tr>';
+  cols.forEach(function (c) { h += '<th>' + esc(dataObj.headers[c]) + '</th>'; });
+  if (extraAction) h += '<th>Thao tác</th>';
+  h += '</tr>';
+  dataObj.rows.forEach(function (r) {
+    h += '<tr>';
+    cols.forEach(function (c) {
+      var v = r[c], head = dataObj.headers[c];
+      if (pcts.indexOf(c) >= 0) v = fmtPct(v);
+      else if (isStatusHeader(head) && v !== '') v = pill(v);
+      else v = esc(fmt(v));
+      h += '<td>' + v + '</td>';
+    });
+    if (extraAction) h += '<td>' + extraAction(r) + '</td>';
+    h += '</tr>';
+  });
+  return h + '</table></div>';
+}
+
+function bars(rows, labelFn, valFn, cls) {
+  var max = 0; rows.forEach(function (r) { max = Math.max(max, Math.abs(Number(valFn(r)) || 0)); });
+  if (!max) return '<p>Chưa có dữ liệu.</p>';
+  var h = '';
+  rows.forEach(function (r) {
+    var v = Number(valFn(r)) || 0;
+    h += '<div class="bar-row"><div class="nm">' + esc(labelFn(r)) + '</div><div class="bar-track"><div class="bar ' + (cls || '') + '" style="width:' + Math.max(2, Math.abs(v) / max * 100) + '%"></div></div><div class="amt">' + fmt(v) + '</div></div>';
+  });
+  return h;
+}
+
+function renderHome() {
+  var k = D.kpi;
+  var g = function (key) { return k[key] !== undefined ? k[key] : '—'; };
+  var h = '<div class="kpis">' +
+    '<div class="kpi orange"><div class="lb">PO ĐANG THỰC HIỆN</div><div class="vl">' + fmt(g('PO đang thực hiện')) + '</div></div>' +
+    '<div class="kpi"><div class="lb">CÒN THIẾU (SL)</div><div class="vl">' + fmt(g('Tổng SL còn thiếu (chưa về đủ)')) + '</div></div>' +
+    '<div class="kpi red"><div class="lb">CÔNG NỢ CÒN PHẢI TRẢ (VND)</div><div class="vl">' + fmt(g('Tổng công nợ còn phải trả (VND)')) + '</div></div>' +
+    '<div class="kpi teal"><div class="lb">TỒN KHẢ DỤNG (SL)</div><div class="vl">' + fmt(g('Tổng tồn khả dụng (tất cả mã)')) + '</div></div></div>';
+  var quaHan = D.congNo.rows.filter(function (r) { return String(r[12]).indexOf('Quá hạn') >= 0; });
+  var sapHan = D.congNo.rows.filter(function (r) { return String(r[12]).indexOf('Sắp đến hạn') >= 0; });
+  var chamETA = D.po.rows.filter(function (r) { return String(r[19]).indexOf('Chậm') >= 0; });
+  if (quaHan.length) h += '<div class="alert red">🔴 <b>' + quaHan.length + ' Invoice quá hạn:</b> ' + quaHan.map(function (r) { return r[0] + ' (' + r[2] + ', còn ' + fmt(r[9]) + 'đ)'; }).join(' • ') + '</div>';
+  if (sapHan.length) h += '<div class="alert orange">🟠 <b>Sắp đến hạn:</b> ' + sapHan.map(function (r) { return r[0] + ' — hạn ' + r[11]; }).join(' • ') + '</div>';
+  if (chamETA.length) h += '<div class="alert orange">⏰ <b>PO chậm ETA:</b> ' + chamETA.map(function (r) { return r[0] + ' (' + r[3] + ', thiếu ' + fmt(r[16]) + ')'; }).join(' • ') + '</div>';
+  h += '<div class="alert blue">📄 Chứng từ bắt buộc còn thiếu: <b>' + fmt(g('Chứng từ bắt buộc còn thiếu')) + '</b> • Tổng quan đầy đủ ở tab Dashboard trong Google Sheet.</div>';
+  if (role === 'internal') {
+    var byNcc = {};
+    D.congNo.rows.forEach(function (r) { byNcc[r[2]] = (byNcc[r[2]] || 0) + (Number(r[9]) || 0); });
+    var apRows = Object.keys(byNcc).map(function (k2) { return [k2, byNcc[k2]]; }).filter(function (r) { return r[1] > 0; });
+    h += '<div class="card"><h3>🏦 Công nợ còn phải trả theo NCC (VND)</h3>' + bars(apRows, function (r) { return r[0]; }, function (r) { return r[1]; }) + '</div>';
+    h += '<div class="card"><h3>💰 Giá vốn theo lô: dự kiến (xám) vs thực tế (cam) — VND/cái</h3>';
+    D.giaVon.rows.forEach(function (r) {
+      h += '<div class="bar-row"><div class="nm">' + esc(r[0] + ' • ' + r[2]) + '</div><div class="bar-track"><div class="bar b2" style="width:' + Math.min(100, (Number(r[11]) || 0) / 40000000 * 100) + '%"></div></div><div class="amt">' + fmt(r[11]) + '</div></div>';
+      h += '<div class="bar-row"><div class="nm"></div><div class="bar-track"><div class="bar b1" style="width:' + Math.min(100, (Number(r[10]) || 0) / 40000000 * 100) + '%"></div></div><div class="amt">' + fmt(r[10]) + '</div></div>';
+    });
+    h += '</div>';
+  }
+  h += '<div class="card"><h3>📦 Tồn khả dụng theo mã</h3>' + bars(D.ton.rows, function (r) { return r[0] + ' — ' + r[1]; }, function (r) { return r[7]; }, 'b1') + '</div>';
+  return h;
+}
+
+function render() {
+  var c = document.getElementById('content');
+  if (!D) { c.innerHTML = '<div class="loading">⏳ Đang tải dữ liệu…</div>'; return; }
+  var h = '';
+  if (curView === 'home') h = renderHome();
+  else if (curView === 'po') h = '<div class="toolbar"><button class="btn" onclick="openPO()">➕ Thêm PO mới</button></div><div class="card">' + tableHtml('po', D.po) + '</div>';
+  else if (curView === 'giavon') h = '<div class="card">' + tableHtml('giavon', D.giaVon) + '</div><div class="alert blue">Chi phí của từng lô nằm ở module 🚢 Chi phí nhập khẩu — mỗi khoản phí phân bổ theo phương pháp riêng (giá trị / số lượng / trọng lượng). Lô có trạng thái <b>Đã chốt 🔒</b> không sửa giá vốn nữa.</div>';
+  else if (curView === 'ton') h = '<div class="toolbar"><button class="btn" onclick="openPhieu()">➕ Ghi phiếu nhập / xuất</button></div><div class="card">' + tableHtml('ton', D.ton) + '</div>';
+  else if (curView === 'congno') h = '<div class="toolbar"><button class="btn" onclick="openTT()">➕ Ghi thanh toán</button></div><div class="card">' + tableHtml('congno', D.congNo) + '</div>';
+  else if (curView === 'chungtu') h = '<div class="card">' + tableHtml('chungtu', D.chungTu) + '</div>';
+  else if (curView === 'giaban') h = '<div class="card">' + tableHtml('giaban', D.giaBan) + '</div>' + (role === 'sales' ? '<div class="alert blue">Sales chỉ thấy giá bán &amp; tồn khả dụng. Giá Project trống = chưa được duyệt cho dự án đó.</div>' : '');
+  else if (curView === 'duyet') h = '<div class="card">' + tableHtml('duyet', D.duyet, function (r) {
+      return r[8] === 'Chờ duyệt' ? '<button class="btn small" onclick="duyet(' + r[r.length - 1] + ',1)">Duyệt</button> <button class="btn small ghost" onclick="duyet(' + r[r.length - 1] + ',0)">Từ chối</button>' : '';
+    }) + '</div>';
+  else if (curView === 'chiphi') h = '<div class="card">' + tableHtml('chiphi', D.chiPhi) + '</div>';
+  else if (curView === 'master') h = '<div class="card"><h3>Mã hàng</h3>' + simpleTable(D.mHang) + '</div><div class="card"><h3>Nhà cung cấp</h3>' + simpleTable(D.mNCC) + '</div><div class="card"><h3>Khách hàng</h3>' + simpleTable(D.mKhach) + '</div><div class="card"><h3>Bảng giá hãng theo hiệu lực</h3>' + simpleTable(D.giaHang) + '</div>';
+  c.innerHTML = h;
+}
+function simpleTable(d) {
+  var h = '<div class="tbl-wrap"><table><tr>';
+  d.headers.forEach(function (x) { h += '<th>' + esc(x) + '</th>'; });
+  h += '</tr>';
+  d.rows.forEach(function (r) { h += '<tr>'; d.headers.forEach(function (_, i) { h += '<td>' + esc(fmt(r[i])) + '</td>'; }); h += '</tr>'; });
+  return h + '</table></div>';
+}
+
+/* ---------- Forms ---------- */
+function fld(label, name, type, val, ph) {
+  return '<div class="fld"><label>' + label + '</label><input name="' + name + '" type="' + (type || 'text') + '" value="' + (val || '') + '" placeholder="' + (ph || '') + '" required></div>';
+}
+function openModal(title, bodyHtml) {
+  document.getElementById('modalBox').innerHTML = '<h3>' + title + '</h3>' + bodyHtml;
+  document.getElementById('modalBg').style.display = 'flex';
+}
+function closeModal() { document.getElementById('modalBg').style.display = 'none'; }
+function formObj(form) { var o = {}; var fd = new FormData(form); fd.forEach(function (v, k) { o[k] = v; }); return o; }
+function submitForm(fnName, form) {
+  var o = formObj(form);
+  toast('⏳ Đang lưu vào Google Sheet…');
+  google.script.run.withSuccessHandler(function (msg) { closeModal(); toast('✅ ' + msg); load(); })
+    .withFailureHandler(function (e) { toast('❌ Lỗi: ' + e.message); })[fnName](o);
+  return false;
+}
+function openPO() {
+  openModal('➕ Thêm PO mới', '<form onsubmit="return submitForm(\'addPO\', this)"><div class="frow">' +
+    fld('Số PO', 'po', 'text', '', 'PO-2611-10') + fld('Ngày đặt', 'ngay', 'date') +
+    fld('Mã NCC', 'ncc', 'text', '', 'NCC-SG') + fld('Mã hàng', 'ma', 'text', '', 'PT-500') +
+    fld('Số lượng', 'sl', 'number') + fld('Giá list (ngoại tệ)', 'list', 'number') +
+    '<div class="fld"><label>Tiền tệ</label><select name="tiente"><option>USD</option><option>EUR</option><option>JPY</option><option>CNY</option></select></div>' + fld('Tỷ giá (VND)', 'tygia', 'number') +
+    fld('CK1 (%)', 'ck1', 'number', '0') + fld('CK2 (%)', 'ck2', 'number', '0') +
+    fld('ETA dự kiến', 'eta', 'date') + fld('Khách / Dự án', 'khach', 'text', '') +
+    '</div><button class="btn" type="submit">Lưu PO</button> <button class="btn ghost" type="button" onclick="closeModal()">Hủy</button></form>');
+}
+function openPhieu() {
+  openModal('➕ Ghi phiếu nhập / xuất kho', '<form onsubmit="return submitForm(\'addPhieu\', this)"><div class="frow">' +
+    fld('Ngày', 'ngay', 'date') +
+    '<div class="fld"><label>Loại phiếu</label><select name="loai"><option>Nhập</option><option>Xuất</option></select></div>' +
+    fld('Mã hàng', 'ma', 'text', '', 'PT-500') + fld('Số lượng', 'sl', 'number') +
+    fld('Số PO liên quan', 'po', 'text', '', 'PO-2611-07') + fld('Mã lô', 'lo', 'text', '', 'L-2611-A') +
+    fld('Khách / Dự án (nếu xuất)', 'khach', 'text', '') + fld('Số phiếu / chứng từ', 'phieu', 'text', '') +
+    '</div><button class="btn" type="submit">Lưu phiếu</button> <button class="btn ghost" type="button" onclick="closeModal()">Hủy</button></form>');
+}
+function openTT() {
+  openModal('➕ Ghi thanh toán NCC', '<form onsubmit="return submitForm(\'addThanhToan\', this)"><div class="frow">' +
+    fld('Ngày', 'ngay', 'date') + fld('Số Invoice', 'inv', 'text', '', 'INV-SG-8841') +
+    fld('Mã NCC', 'ncc', 'text', '', 'NCC-SG') + fld('Số tiền (VND)', 'tien', 'number') +
+    '<div class="fld"><label>Hình thức</label><select name="ht"><option>Chuyển khoản</option><option>Tiền mặt</option><option>LC</option></select></div>' + fld('Mã CK / tham chiếu', 'ck', 'text', '', 'CK-1010') +
+    '</div><p style="font-size:12.5px;color:#64748B;margin-bottom:12px">1 lệnh chuyển tiền trả nhiều Invoice: ghi nhiều dòng cùng 1 Mã CK.</p>' +
+    '<button class="btn" type="submit">Lưu thanh toán</button> <button class="btn ghost" type="button" onclick="closeModal()">Hủy</button></form>');
+}
+function duyet(row, ok) {
+  toast('⏳ Đang cập nhật…');
+  google.script.run.withSuccessHandler(function (msg) { toast('✅ ' + msg); load(); })
+    .withFailureHandler(function (e) { toast('❌ Lỗi: ' + e.message); })
+    .setDuyet(row, ok ? 'Đã duyệt' : 'Từ chối', 'Quản lý mua hàng');
+}
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(function () { t.style.display = 'none'; }, 3400);
+}
+
+/* ---------- Khởi động ---------- */
+function load() {
+  google.script.run.withSuccessHandler(function (data) {
+    D = data;
+    document.getElementById('sheetLink').href = SHEET_URL;
+    document.getElementById('portalLink').href = data.portal;
+    if (role === 'sales' && VIEWS.filter(function (v) { return v.id === curView && v.internal; }).length) curView = 'home';
+    renderMenu(); render();
+  }).withFailureHandler(function (e) {
+    document.getElementById('content').innerHTML = '<div class="alert red">❌ Không tải được dữ liệu: ' + esc(e.message) + '</div>';
+  }).getAllData();
+}
+document.getElementById('btnReload').addEventListener('click', load);
+document.getElementById('hamb').addEventListener('click', function () {
+  var s = document.getElementById('sidebar'); s.classList.add('open');
+  document.getElementById('scrim').style.display = 'block';
+});
+document.getElementById('scrim').addEventListener('click', function () { go(curView); });
+document.getElementById('roleIn').addEventListener('click', function () { setRole('internal'); });
+document.getElementById('roleSales').addEventListener('click', function () { setRole('sales'); });
+function setRole(r) {
+  role = r;
+  document.getElementById('roleIn').className = r === 'internal' ? 'on' : '';
+  document.getElementById('roleSales').className = r === 'sales' ? 'on' : '';
+  if (r === 'sales' && VIEWS.filter(function (v) { return v.id === curView && v.internal; }).length) curView = 'home';
+  document.getElementById('modTitle').textContent = TITLES[curView];
+  renderMenu(); render();
+}
+document.getElementById('modalBg').addEventListener('click', function (e) { if (e.target === this) closeModal(); });
+load();
+</script>
+</body>
+</html>
