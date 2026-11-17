@@ -278,15 +278,6 @@ function dataTable(tabKey, tab, opts) {
   });
   return h + '</table>';
 }
-function statusTag(v) {
-  v = String(v || '');
-  if (/quá hạn/i.test(v)) return '<span class="tag red">' + esc(v) + '</span>';
-  if (/sắp đến hạn|chờ duyệt/i.test(v)) return '<span class="tag amber">' + esc(v) + '</span>';
-  if (/đã thanh toán đủ|đã duyệt|đang hiệu lực|đã chốt|đủ/i.test(v)) return '<span class="tag green">' + esc(v) + '</span>';
-  if (/từ chối|thiếu|chưa/i.test(v)) return '<span class="tag red">' + esc(v) + '</span>';
-  if (/vận chuyển|sản xuất|thanh toán một phần/i.test(v)) return '<span class="tag blue">' + esc(v) + '</span>';
-  return esc(v);
-}
 function addBtn(tabKey, label) {
   if (!PERMS.write || ADDTABS.indexOf(tabKey) < 0) return '';
   return '<button class="btn" onclick="openAdd(\'' + tabKey + '\')">' + (label || '➕ Thêm dòng mới') + '</button>';
