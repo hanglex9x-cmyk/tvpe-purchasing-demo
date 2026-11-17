@@ -9,15 +9,16 @@
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #EEF1F6; color: #1B2A44; }
   .layout { display: flex; min-height: 100vh; }
   .sidebar { width: 268px; flex: 0 0 268px; background: linear-gradient(180deg, #060F24, #0B2341 70%, #0D2B4F); color: #DCE6F2; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 40; }
-  .brand { display: flex; align-items: center; gap: 12px; padding: 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
-  .logo { width: 44px; height: 44px; border-radius: 12px; background: #F97316; color: #fff; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; }
-  .brand h1 { font-size: 19px; color: #fff; } .brand p { font-size: 11px; color: #93A7C4; margin-top: 2px; }
-  .menu-label { font-size: 10.5px; letter-spacing: 1.6px; color: #7E93B3; padding: 16px 20px 8px; }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,.08); min-height: 76px; }
+  .logo { width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; background: #F97316; color: #fff; font-weight: 800; font-size: 21px; display: flex; align-items: center; justify-content: center; }
+  .brand h1 { font-size: 19px; color: #fff; line-height: 1.15; } .brand p { font-size: 11px; color: #93A7C4; margin-top: 2px; }
+  .menu-label { font-size: 10.5px; font-weight: 700; letter-spacing: 1.8px; color: #7E93B3; padding: 18px 22px 7px; text-transform: uppercase; }
   .menu { flex: 1; overflow-y: auto; }
-  .menu a { display: block; margin: 2px 8px; padding: 10px 12px; border-radius: 10px; color: #DCE6F2; font-size: 13.5px; text-decoration: none; }
+  .menu a { display: flex; align-items: center; gap: 11px; height: 41px; margin: 2px 10px; padding: 0 11px; border-radius: 10px; color: #DCE6F2; font-size: 13.5px; text-decoration: none; }
+  .menu a .ic { width: 27px; height: 27px; flex: 0 0 27px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.09); border-radius: 8px; font-size: 14px; line-height: 1; }
+  .menu a .tx { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .menu a:hover { background: rgba(255,255,255,.07); }
-  .side-foot { padding: 14px 18px; border-top: 1px solid rgba(255,255,255,.08); font-size: 11.5px; color: #93A7C4; line-height: 1.7; }
-  .side-foot a { color: #FFB37E; text-decoration: none; }
+  .side-foot { padding: 14px 22px; border-top: 1px solid rgba(255,255,255,.08); font-size: 11px; color: #7E93B3; line-height: 1.7; }
   .main { flex: 1; min-width: 0; }
   .topbar { background: #0B2341; color: #fff; padding: 14px 22px; border-bottom: 3px solid #F97316; position: sticky; top: 0; z-index: 30; display: flex; gap: 12px; align-items: center; }
   .topbar h2 { font-size: 17px; flex: 1; }
@@ -54,19 +55,19 @@
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="brand"><div class="logo">T</div><div><h1>TVPE</h1><p>Portal Hướng dẫn sử dụng</p></div></div>
-    <div class="menu-label">MỤC LỤC</div>
+    <div class="menu-label">Mục lục</div>
     <nav class="menu">
-      <a href="#bat-dau">🚀 1. Bắt đầu — các link cần lưu</a>
-      <a href="#quy-trinh">🔄 2. Quy trình làm việc hằng ngày</a>
-      <a href="#po">🧾 3. Tạo & theo dõi PO</a>
-      <a href="#kho">📦 4. Nhận hàng & kho</a>
-      <a href="#gia-von">💰 5. Chi phí & giá vốn</a>
-      <a href="#cong-no">🏦 6. Công nợ & thanh toán</a>
-      <a href="#gia-ban">🏷️ 7. Bảng giá & phê duyệt giá</a>
-      <a href="#chung-tu">🗂️ 8. Hồ sơ chứng từ</a>
-      <a href="#ma">🔑 9. Quy tắc mã</a>
-      <a href="#phan-quyen">🔐 10. Phân quyền & an toàn</a>
-      <a href="#su-co">🛠️ 11. Xử lý sự cố thường gặp</a>
+      <a href="#bat-dau"><span class="ic">🚀</span><span class="tx">1. Bắt đầu — các link cần lưu</span></a>
+      <a href="#quy-trinh"><span class="ic">🔄</span><span class="tx">2. Quy trình làm việc hằng ngày</span></a>
+      <a href="#po"><span class="ic">🧾</span><span class="tx">3. Tạo & theo dõi PO</span></a>
+      <a href="#kho"><span class="ic">📦</span><span class="tx">4. Nhận hàng & kho</span></a>
+      <a href="#gia-von"><span class="ic">💰</span><span class="tx">5. Chi phí & giá vốn</span></a>
+      <a href="#cong-no"><span class="ic">🏦</span><span class="tx">6. Công nợ & thanh toán</span></a>
+      <a href="#gia-ban"><span class="ic">🏷️</span><span class="tx">7. Bảng giá & phê duyệt giá</span></a>
+      <a href="#chung-tu"><span class="ic">🗂️</span><span class="tx">8. Hồ sơ chứng từ</span></a>
+      <a href="#ma"><span class="ic">🔑</span><span class="tx">9. Quy tắc mã</span></a>
+      <a href="#phan-quyen"><span class="ic">🔐</span><span class="tx">10. Phân quyền & an toàn</span></a>
+      <a href="#su-co"><span class="ic">🛠️</span><span class="tx">11. Xử lý sự cố thường gặp</span></a>
     </nav>
     <div class="side-foot">Hệ thống quản trị mua hàng & nhập khẩu TVPE — dữ liệu nằm trên Google Drive của công ty.</div>
   </aside>
