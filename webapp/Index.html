@@ -220,7 +220,7 @@ function fmtN(v) { var n = Number(v); return isNaN(n) || v === '' || v === null 
 function toast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(function () { t.style.display = 'none'; }, 4200); }
 function needUser() { return !!TOKEN; }
 function authFail(e) {
-  if (e && String(e.message || '').indexOf('AUTH:') === 0) { forceLogin('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.'); return true; }
+  if (e && String(e.message || '').indexOf('AUTH:') >= 0) { forceLogin('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.'); return true; }
   return false;
 }
 function run(fn, args, doneMsg) {
