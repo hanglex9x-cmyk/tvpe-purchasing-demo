@@ -270,8 +270,8 @@ function dataTable(tabKey, tab, opts) {
     if ((PERMS.write || PERMS.del) && !opts.noActions) {
       var row = r[r.length - 1];
       h += '<td class="act">'
-        + (PERMS.write ? '<button class="btn sm edit" onclick="openEdit(\'' + tabKey + '\',' + row + ')">✏️ Sửa</button> ' : '')
-        + (PERMS.del ? '<button class="btn sm del" onclick="doDelete(\'' + tabKey + '\',' + row + ')">🗑️ Xóa</button>' : '')
+        + (PERMS.write ? '<button class="btn sm edit" title="Sửa" onclick="openEdit(\'' + tabKey + '\',' + row + ')">✏️</button> ' : '')
+        + (PERMS.del ? '<button class="btn sm del" title="Xóa" onclick="doDelete(\'' + tabKey + '\',' + row + ')">🗑️</button>' : '')
         + '</td>';
     }
     h += '</tr>';
@@ -409,7 +409,7 @@ var VIEWS = {
       h += '<tr>';
       D.duyet.headers.forEach(function (x, i) { h += '<td' + (typeof r[i] === 'number' ? ' class="num"' : '') + '>' + (i === 8 ? statusTag(r[i]) : fmtN(r[i])) + '</td>'; });
       h += '<td style="white-space:nowrap">' + (PERMS.approve ? (r[8] === 'Chờ duyệt' ? '<button class="btn sm" style="background:#0FA06E" onclick="duyet(' + row + ',\'Đã duyệt\')">✔ Duyệt</button> <button class="btn sm del" onclick="duyet(' + row + ',\'Từ chối\')">✖ Từ chối</button>' : '<span style="color:#5A6B84;font-size:12px">Đã xử lý</span>') : '') + '</td>';
-      h += '<td class="act">' + (PERMS.write ? '<button class="btn sm edit" onclick="openEdit(\'duyet\',' + row + ')">✏️ Sửa</button> ' : '') + (PERMS.del ? '<button class="btn sm del" onclick="doDelete(\'duyet\',' + row + ')">🗑️ Xóa</button>' : '') + '</td></tr>';
+      h += '<td class="act">' + (PERMS.write ? '<button class="btn sm edit" title="Sửa" onclick="openEdit(\'duyet\',' + row + ')">✏️</button> ' : '') + (PERMS.del ? '<button class="btn sm del" title="Xóa" onclick="doDelete(\'duyet\',' + row + ')">🗑️</button>' : '') + '</td></tr>';
     });
     return h + '</table></div>';
   },
