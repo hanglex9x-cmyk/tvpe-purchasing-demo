@@ -232,7 +232,7 @@ function getAllData(token) {
     ton.rows.forEach(function (r) { for (var c = 0; c < r.length - 1; c++) { if ([0, 1, 7].indexOf(c) < 0) r[c] = ''; } });
     out.ton = ton;
     out.kpi = {};
-    ['po', 'nx', 'giavon', 'chiphi', 'congno', 'thanhtoan', 'chungtu', 'duyet', 'giahang', 'mhang', 'mncc', 'mkhach', 'lichsu'].forEach(function (k) { out[k] = { headers: [], rows: [] }; });
+    ['po', 'nx', 'giavon', 'chiphi', 'congno', 'thanhtoan', 'chungtu', 'duyet', 'giahang', 'mhang', 'mncc', 'mkhach', 'lichsu', 'doichieu'].forEach(function (k) { out[k] = { headers: [], rows: [] }; });
     return out;
   }
   var dash = ss_().getSheetByName('DASHBOARD');
@@ -241,6 +241,7 @@ function getAllData(token) {
   dash.getRange('A28:B37').getValues().forEach(function (r) { if (r[0]) kpi[String(r[0])] = r[1]; });
   out.kpi = kpi;
   out.lichsu = tab_('LICH_SU');
+  out.doichieu = tab_('DOI_CHIEU');
   Object.keys(TABS).forEach(function (k) { out[k] = tab_(TABS[k].sheet); });
   return out;
 }
@@ -365,6 +366,70 @@ function addThanhToan(token, o) {
     return 'Đã ghi thanh toán cho ' + o.inv;
   });
 }
+/* ================= NẠP FILE TỪ MISA ================= */
+function importMaster(token, rows) {
+  var sess = auth_(token); requireWrite_(sess);
+  if (!rows || !rows.length) throw new Error('Không có dòng dữ liệu nào trong file.');
+  return withLock_(function () {
+    var sh = ss_().getSheetByName('MASTER_HANG');
+    var vals = sh.getDataRange().getValues();
+    var pos = {};
+    for (var i = 1; i < vals.length; i++) if (vals[i][0]) pos[String(vals[i][0]).trim().toUpperCase()] = i + 1;
+    var added = 0, updated = 0;
+    rows.forEach(function (r) {
+      var code = String(r[0] || '').trim();
+      if (!code) return;
+      var key = code.toUpperCase();
+      var line = [code, String(r[1] || code), String(r[2] || ''), String(r[3] || ''), String(r[4] || ''), String(r[5] || ''), String(r[6] || 'Đang bán'), String(r[7] || '')];
+      if (pos[key]) {
+        var row = pos[key];
+        for (var c = 1; c < 8; c++) if (line[c] !== '') sh.getRange(row, c + 1).setValue(line[c]);
+        updated++;
+      } else {
+        sh.appendRow(line);
+        pos[key] = sh.getLastRow();
+        added++;
+      }
+    });
+    log_(actor_(sess), 'mhang', 'Nạp từ MISA', '', 'Thêm mới ' + added + ' mã, cập nhật ' + updated + ' mã');
+    return 'Đã nạp danh sách mã: thêm mới ' + added + ' mã, cập nhật ' + updated + ' mã.';
+  });
+}
+function importDoiChieu(token, rows) {
+  var sess = auth_(token); requireWrite_(sess);
+  if (!rows || !rows.length) throw new Error('Không có dòng dữ liệu nào trong file.');
+  return withLock_(function () {
+    var ss = ss_();
+    var ton = ss.getSheetByName('TON_KHO').getDataRange().getValues();
+    var tonMap = {};
+    for (var i = 1; i < ton.length; i++) if (ton[i][0]) tonMap[String(ton[i][0]).trim().toUpperCase()] = { thuc: Number(ton[i][5]) || 0, khadung: Number(ton[i][7]) || 0 };
+    var sh = ss.getSheetByName('DOI_CHIEU');
+    if (sh.getLastRow() > 1) sh.deleteRows(2, sh.getLastRow() - 1);
+    var today = new Date();
+    var lech = 0, khongco = 0, n = 0;
+    rows.forEach(function (r) {
+      var code = String(r[0] || '').trim();
+      var qty = Number(r[1]);
+      if (!code || isNaN(qty)) return;
+      n++;
+      var row = sh.getLastRow() + 1;
+      var t = tonMap[code.toUpperCase()];
+      if (!t) khongco++; else if (t.thuc !== qty) lech++;
+      sh.getRange(row, 1).setValue(code);
+      sh.getRange(row, 2).setFormula('=IFERROR(INDEX(MASTER_HANG!C:C;MATCH(A' + row + ';MASTER_HANG!A:A;0));"—")');
+      sh.getRange(row, 3).setValue(qty);
+      sh.getRange(row, 4).setFormula('=IFERROR(INDEX(TON_KHO!F:F;MATCH(A' + row + ';TON_KHO!A:A;0));"")');
+      sh.getRange(row, 5).setFormula('=IFERROR(INDEX(TON_KHO!H:H;MATCH(A' + row + ';TON_KHO!A:A;0));"")');
+      sh.getRange(row, 6).setFormula('=IF(OR(C' + row + '="";D' + row + '="");"";C' + row + '-D' + row + ')');
+      sh.getRange(row, 7).setFormula('=IF(D' + row + '="";"⚠️ Chưa có trong hệ thống";IF(F' + row + '=0;"✔ Khớp";"⚠️ Lệch — cần kiểm tra"))');
+      sh.getRange(row, 8).setValue(today);
+      sh.getRange(row, 9).setValue(sess.name);
+    });
+    log_(actor_(sess), 'ton', 'Nạp tồn MISA đối chiếu', '', n + ' mã: khớp ' + (n - lech - khongco) + ', lệch ' + lech + ', chưa có ' + khongco);
+    return 'Đã nạp tồn MISA: ' + n + ' mã — khớp ' + (n - lech - khongco) + ', lệch ' + lech + ', chưa có trong hệ thống ' + khongco + '.';
+  });
+}
+
 function setDuyet(token, row, status) {
   var sess = auth_(token); requireApprove_(sess);
   return withLock_(function () {
