@@ -61,7 +61,7 @@ function tiendo_() {
     var r = vals[i];
     if (!r[6]) continue;
     if (!(Number(r[10]) > 0)) continue; // chỉ dòng còn thiếu hàng = đang về
-    rows.push([r[6], r[7], r[2], r[8], r[9], r[10], r[18], r[19]]);
+    rows.push([r[6], r[7], r[2], r[8], r[9], r[10], r[18], fmt_(r[19])]);
   }
   return { headers: ['Mã hàng', 'Tên hàng', 'Khách / Dự án', 'SL đặt', 'SL đã nhận', 'SL còn thiếu', 'Trạng thái', 'ETA dự kiến'], rows: rows };
 }
