@@ -746,7 +746,7 @@ function printPO() {
 
 /* ---------- Điều hướng ---------- */
 function show(view) {
-  if (ME && PERMS.kho && ['ton', 'nx', 'napmisa'].indexOf(view) < 0) view = 'ton';
+  if (ME && PERMS.kho) { if (['ton', 'nx', 'napmisa'].indexOf(view) < 0) view = 'ton'; }
   else if (ME && !PERMS.cost && ['giaban', 'ton', 'tiendo'].indexOf(view) < 0) view = 'giaban';
   document.querySelectorAll('.mitem').forEach(function (a) { a.classList.toggle('active', a.getAttribute('data-view') === view); });
   document.getElementById('viewTitle').textContent = TITLES[view] || view;
