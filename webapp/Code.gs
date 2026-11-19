@@ -13,10 +13,10 @@ var PORTAL_URL = 'https://docs.google.com/spreadsheets/d/1bQ-B2fJxBRRq-vYTMGc6BN
 
 var TABS = {
   po:        { sheet: 'PO',            edit: [1, 2, 3, 4, 5, 6, 8, 11, 12, 13, 15, 16, 18, 19, 20, 22], label: 'Đơn hàng & PO' },
-  nx:        { sheet: 'NHAP_XUAT_KHO', edit: [0, 1, 2, 3, 4, 6, 7, 9], label: 'Nhập / Xuất kho' },
+  nx:        { sheet: 'NHAP_XUAT_KHO', edit: [0, 1, 2, 3, 4, 6, 7, 9, 10], label: 'Nhập / Xuất kho' },
   giavon:    { sheet: 'GIA_VON',       edit: [0, 1, 2, 3, 4, 11, 15], label: 'Giá vốn' },
   chiphi:    { sheet: 'CHI_PHI_NK',    edit: [0, 1, 2, 3, 4], label: 'Chi phí nhập khẩu' },
-  ton:       { sheet: 'TON_KHO',       edit: [2, 6, 8], label: 'Kho & tồn kho' },
+  ton:       { sheet: 'TON_KHO',       edit: [2, 6, 8, 11, 12], label: 'Kho & tồn kho' },
   congno:    { sheet: 'CONG_NO',       edit: [0, 1, 2, 3, 4, 5, 6, 13], label: 'Công nợ NCC' },
   thanhtoan: { sheet: 'THANH_TOAN',    edit: [0, 1, 2, 3, 4, 5, 6], label: 'Thanh toán' },
   chungtu:   { sheet: 'CHUNG_TU',      edit: [0, 1, 2, 3, 4, 5, 6, 7, 8], label: 'Hồ sơ chứng từ' },
@@ -71,6 +71,13 @@ function tiendo_() {
     rows.push([r[6], r[7], r[2], r[8], r[9], r[10], r[18], fmt_(r[19])]);
   }
   return { headers: ['Mã hàng', 'Tên hàng', 'Khách / Dự án', 'SL đặt', 'SL đã nhận', 'SL còn thiếu', 'Trạng thái', 'ETA dự kiến'], rows: rows };
+}
+function brands_() {
+  // Ánh xạ Mã hàng -> Hãng/NSX (từ MASTER_HANG) — hãng không phải dữ liệu nhạy cảm, gửi cho mọi vai trò để gom tồn kho theo hãng
+  var vals = ss_().getSheetByName('MASTER_HANG').getDataRange().getValues();
+  var out = {};
+  for (var i = 1; i < vals.length; i++) if (vals[i][0]) out[String(vals[i][0])] = String(vals[i][3] || '');
+  return out;
 }
 function users_() {
   var sh = ss_().getSheetByName('PHAN_QUYEN');
@@ -246,6 +253,7 @@ function getAllData(token) {
   var sess = auth_(token);
   var out = { portal: PORTAL_URL, me: { username: sess.u, name: sess.name, role: sess.role, perms: sess.perms } };
   out.tiendo = tiendo_();
+  out.brands = brands_();
   if (sess.perms && sess.perms.kho) {
     // Vai trò KHO: chỉ kho + nhập/xuất + master (để chọn mã) + đối chiếu MISA + tiến độ — server KHÔNG gửi giá bán, giá vốn, PO, công nợ.
     out.ton = tab_('TON_KHO');
@@ -261,7 +269,7 @@ function getAllData(token) {
     // Tài khoản KHÔNG có quyền xem giá vốn: CHỈ giá bán (đã che giá sàn nội bộ) + tồn khả dụng (chỉ mã, tên, khả dụng) + tiến độ hàng về (không giá) — server không gửi dữ liệu giá vốn/PO/công nợ.
     out.giaban = blankCols_(tab_('BANG_GIA_BAN'), [9]);
     var ton = tab_('TON_KHO');
-    ton.rows.forEach(function (r) { for (var c = 0; c < r.length - 1; c++) { if ([0, 1, 7].indexOf(c) < 0) r[c] = ''; } });
+    ton.rows.forEach(function (r) { for (var c = 0; c < r.length - 1; c++) { if ([0, 1, 7, 15, 16].indexOf(c) < 0) r[c] = ''; } });
     out.ton = ton;
     out.kpi = {};
     ['po', 'nx', 'giavon', 'chiphi', 'congno', 'thanhtoan', 'chungtu', 'duyet', 'giahang', 'mhang', 'mncc', 'mkhach', 'lichsu', 'doichieu'].forEach(function (k) { out[k] = { headers: [], rows: [] }; });
@@ -388,7 +396,8 @@ function addPhieu(token, o) {
     sh.getRange(r, 7).setValue(Number(o.sl));
     sh.getRange(r, 8).setValue(o.khach || '');
     sh.getRange(r, 10).setValue(o.note || '');
-    log_(actor_(sess), 'nx', 'Thêm', r, o.loai + ' ' + o.ma + ' — SL ' + o.sl);
+    sh.getRange(r, 11).setValue(o.kho || '');
+    log_(actor_(sess), 'nx', 'Thêm', r, o.loai + ' ' + o.ma + ' — SL ' + o.sl + (o.kho ? ' — Kho ' + o.kho : ''));
     return 'Đã ghi phiếu ' + o.loai + ' ' + o.ma;
   });
 }
@@ -462,6 +471,177 @@ function importDoiChieu(token, rows) {
     });
     log_(actor_(sess), 'ton', 'Nạp tồn MISA đối chiếu', '', n + ' mã: khớp ' + (n - lech - khongco) + ', lệch ' + lech + ', chưa có ' + khongco);
     return 'Đã nạp tồn MISA: ' + n + ' mã — khớp ' + (n - lech - khongco) + ', lệch ' + lech + ', chưa có trong hệ thống ' + khongco + '.';
+  });
+}
+
+/* ================= NẠP PHIẾU NHẬP/XUẤT TỪ MISA + ĐỒNG BỘ DANH MỤC TỪ DRIVE ================= */
+function normDateKey_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, 'Asia/Ho_Chi_Minh', 'yyyyMMdd');
+  var s = String(v || '').trim();
+  var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return m[1] + m[2] + m[3];
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (m) return m[3] + ('0' + m[2]).slice(-2) + ('0' + m[1]).slice(-2);
+  return s;
+}
+function ensureTonRow_(ss, code) {
+  var sh = ss.getSheetByName('TON_KHO');
+  var vals = sh.getRange(1, 1, Math.max(sh.getLastRow(), 1), 1).getValues();
+  for (var i = 1; i < vals.length; i++) if (String(vals[i][0]).trim().toUpperCase() === String(code).trim().toUpperCase()) return false;
+  var r = sh.getLastRow() + 1;
+  sh.getRange(r, 1).setValue(code);
+  sh.getRange(r, 2).setFormula('=IFERROR(INDEX(MASTER_HANG!C:C;MATCH(A' + r + ';MASTER_HANG!A:A;0));"")');
+  sh.getRange(r, 3).setValue(0);
+  sh.getRange(r, 4).setFormula('=SUMIFS(NHAP_XUAT_KHO!G:G;NHAP_XUAT_KHO!E:E;A' + r + ';NHAP_XUAT_KHO!B:B;"Nhập")');
+  sh.getRange(r, 5).setFormula('=SUMIFS(NHAP_XUAT_KHO!G:G;NHAP_XUAT_KHO!E:E;A' + r + ';NHAP_XUAT_KHO!B:B;"Xuất")');
+  sh.getRange(r, 6).setFormula('=C' + r + '+D' + r + '-E' + r);
+  sh.getRange(r, 7).setValue(0);
+  sh.getRange(r, 8).setFormula('=F' + r + '-G' + r);
+  sh.getRange(r, 10).setFormula('=IF(F' + r + '<0;"🔴 Tồn âm";IF(H' + r + '<0;"🔴 Giữ vượt tồn";IF(H' + r + '=0;"🟠 Hết khả dụng";"🟢 Còn bán được")))');
+  sh.getRange(r, 11).setFormula('=SUMIFS(PO!K:K;PO!G:G;A' + r + ')');
+  sh.getRange(r, 12).setValue(0);
+  sh.getRange(r, 13).setValue(0);
+  sh.getRange(r, 14).setFormula('=L' + r + '+SUMIFS(NHAP_XUAT_KHO!G:G;NHAP_XUAT_KHO!E:E;A' + r + ';NHAP_XUAT_KHO!B:B;"Nhập";NHAP_XUAT_KHO!K:K;"QN")-SUMIFS(NHAP_XUAT_KHO!G:G;NHAP_XUAT_KHO!E:E;A' + r + ';NHAP_XUAT_KHO!B:B;"Xuất";NHAP_XUAT_KHO!K:K;"QN")');
+  sh.getRange(r, 15).setFormula('=M' + r + '+SUMIFS(NHAP_XUAT_KHO!G:G;NHAP_XUAT_KHO!E:E;A' + r + ';NHAP_XUAT_KHO!B:B;"Nhập";NHAP_XUAT_KHO!K:K;"HN")-SUMIFS(NHAP_XUAT_KHO!G:G;NHAP_XUAT_KHO!E:E;A' + r + ';NHAP_XUAT_KHO!B:B;"Xuất";NHAP_XUAT_KHO!K:K;"HN")');
+  sh.getRange(r, 16).setFormula('=IF(F' + r + '=0;0;ROUND(N' + r + '*H' + r + '/F' + r + ';0))');
+  sh.getRange(r, 17).setFormula('=H' + r + '-P' + r);
+  return true;
+}
+function importPhieu(token, rows) {
+  var sess = auth_(token); requireWrite_(sess);
+  if (!rows || !rows.length) throw new Error('Không có dòng dữ liệu nào trong file.');
+  return withLock_(function () {
+    var ss = ss_();
+    var mh = ss.getSheetByName('MASTER_HANG').getDataRange().getValues();
+    var master = {};
+    for (var i = 1; i < mh.length; i++) if (mh[i][0]) master[String(mh[i][0]).trim().toUpperCase()] = 1;
+    var nxSh = ss.getSheetByName('NHAP_XUAT_KHO');
+    var nxVals = nxSh.getDataRange().getValues();
+    function keyOf(maphieu, code, loai, sl, ngay) { return String(maphieu || '').trim().toUpperCase() + '|' + String(code || '').trim().toUpperCase() + '|' + loai + '|' + (Number(sl) || 0) + '|' + normDateKey_(ngay); }
+    var seen = {};
+    for (var j = 1; j < nxVals.length; j++) if (nxVals[j][2]) seen[keyOf(nxVals[j][2], nxVals[j][4], nxVals[j][1], nxVals[j][6], nxVals[j][0])] = 1;
+    var poVals = ss.getSheetByName('PO').getDataRange().getValues();
+    var openByCode = {};
+    for (var p = 1; p < poVals.length; p++) {
+      var cd = String(poVals[p][6] || '').trim().toUpperCase();
+      var left = Number(poVals[p][10]) || 0;
+      if (cd && left > 0) { (openByCode[cd] = openByCode[cd] || []).push({ line: String(poVals[p][0]), left: left }); }
+    }
+    var added = 0, dup = 0, news = [], ensured = {};
+    rows.forEach(function (r) {
+      var code = String(r.code || '').trim();
+      if (!code) return;
+      if (!master[code.toUpperCase()]) { if (news.indexOf(code) < 0) news.push(code); return; }
+      var sl = Number(r.sl);
+      if (!(sl > 0)) return;
+      var loai = r.loai === 'Xuất' ? 'Xuất' : 'Nhập';
+      var key = keyOf(r.maphieu, code, loai, sl, r.ngay);
+      if (seen[key]) { dup++; return; }
+      seen[key] = 1;
+      var parts = [{ mdp: String(r.madongpo || ''), sl: sl }];
+      if (loai === 'Nhập' && !r.madongpo) {
+        parts = [];
+        var rest = sl;
+        var lines = openByCode[code.toUpperCase()] || [];
+        for (var q = 0; q < lines.length && rest > 0; q++) {
+          var take = Math.min(rest, lines[q].left);
+          if (take > 0) { parts.push({ mdp: lines[q].line, sl: take }); lines[q].left -= take; rest -= take; }
+        }
+        if (rest > 0) parts.push({ mdp: '', sl: rest });
+        if (!parts.length) parts = [{ mdp: '', sl: sl }];
+      }
+      parts.forEach(function (pt) {
+        var row = nxSh.getLastRow() + 1;
+        nxSh.getRange(row, 1, 1, 5).setValues([[String(r.ngay || ''), loai, String(r.maphieu || ''), pt.mdp, code]]);
+        nxSh.getRange(row, 6).setFormula('=IFERROR(INDEX(MASTER_HANG!C:C;MATCH(E' + row + ';MASTER_HANG!A:A;0));"")');
+        nxSh.getRange(row, 7).setValue(pt.sl);
+        nxSh.getRange(row, 8).setValue(String(r.khach || ''));
+        nxSh.getRange(row, 10).setValue(String(r.ghichu || 'Nạp từ MISA'));
+        nxSh.getRange(row, 11).setValue(String(r.kho || ''));
+        added++;
+      });
+      if (!ensured[code.toUpperCase()]) { ensureTonRow_(ss, code); ensured[code.toUpperCase()] = 1; }
+    });
+    log_(actor_(sess), 'nx', 'Nạp phiếu MISA', '', 'Thêm ' + added + ' dòng phiếu, trùng bỏ qua ' + dup + ', mã mới chưa nạp ' + news.length);
+    var msg = 'Đã nạp phiếu: thêm ' + added + ' dòng, bỏ qua ' + dup + ' dòng trùng (đã có trong hệ thống).';
+    if (news.length) msg += ' Có ' + news.length + ' mã chưa có trong danh mục nên chưa nạp được: ' + news.slice(0, 10).join(', ') + (news.length > 10 ? '…' : '') + '. Hãy đồng bộ danh mục từ Drive (hoặc nạp danh sách mã) trước, rồi nạp lại file này — các dòng trùng sẽ tự bỏ qua.';
+    return msg;
+  });
+}
+function driveId_(url) { var m = String(url || '').match(/[-\w]{25,}/); return m ? m[0] : ''; }
+function getDriveCfg(token) {
+  auth_(token);
+  return { url: PropertiesService.getScriptProperties().getProperty('DRIVE_MASTER_URL') || '' };
+}
+function setDriveCfg(token, url) {
+  var sess = auth_(token); requireWrite_(sess);
+  if (!driveId_(url)) throw new Error('Link file Drive chưa đúng — hãy dán link file Google Sheet danh mục.');
+  PropertiesService.getScriptProperties().setProperty('DRIVE_MASTER_URL', String(url).trim());
+  log_(actor_(sess), 'hethong', 'Cài link Drive danh mục', '', '');
+  return 'Đã lưu link file Drive danh mục.';
+}
+function stripVn_(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd'); }
+function syncDriveMaster(token) {
+  var sess = auth_(token); requireWrite_(sess);
+  var url = PropertiesService.getScriptProperties().getProperty('DRIVE_MASTER_URL') || '';
+  var id = driveId_(url);
+  if (!id) throw new Error('Chưa cài link file Drive danh mục. Dán link vào ô phía trên rồi bấm Lưu link trước.');
+  var src;
+  try { src = SpreadsheetApp.openById(id); } catch (e) { throw new Error('Không mở được file Drive. Kiểm tra lại: file đã được chia sẻ cho tài khoản chủ hệ thống chưa, link có đúng không.'); }
+  return withLock_(function () {
+    var items = {};
+    src.getSheets().forEach(function (sh) {
+      var nm = sh.getName();
+      var generic = /tong|bao cao|^sheet|demo/i.test(stripVn_(nm));
+      var brand = generic ? '' : nm;
+      var vals = sh.getDataRange().getValues();
+      for (var i = 0; i < vals.length; i++) {
+        var r = vals[i];
+        var a = String(r[0] === null || r[0] === undefined ? '' : r[0]).trim();
+        var b = String(r[1] === null || r[1] === undefined ? '' : r[1]).trim();
+        var c = String(r[2] === null || r[2] === undefined ? '' : r[2]).trim();
+        if (!b && a && isNaN(Number(a)) && !c) { brand = a; continue; }
+        if (!b) continue;
+        if (/ma hieu|model/i.test(stripVn_(b)) || /ten hang/i.test(stripVn_(c))) continue;
+        if (!c && (r[3] === '' || r[3] === null || r[3] === undefined) && isNaN(Number(b))) { brand = b; continue; }
+        items[b.toUpperCase()] = { code: b, name: c, brand: brand, qn: Number(r[3]) || 0, hn: Number(r[4]) || 0 };
+      }
+    });
+    var list = Object.keys(items).map(function (k) { return items[k]; });
+    if (!list.length) throw new Error('Không đọc được mã hàng nào trong file Drive. Kiểm tra lại cấu trúc file (cột B = mã hiệu, cột C = tên hàng).');
+    var ss = ss_();
+    var mhSh = ss.getSheetByName('MASTER_HANG');
+    var mh = mhSh.getDataRange().getValues();
+    var pos = {};
+    for (var i = 1; i < mh.length; i++) if (mh[i][0]) pos[String(mh[i][0]).trim().toUpperCase()] = i + 1;
+    var tonSh = ss.getSheetByName('TON_KHO');
+    var tonPos = {};
+    var tonVals = tonSh.getDataRange().getValues();
+    for (var t = 1; t < tonVals.length; t++) if (tonVals[t][0]) tonPos[String(tonVals[t][0]).trim().toUpperCase()] = { row: t + 1, dk: (Number(tonVals[t][11]) || 0) + (Number(tonVals[t][12]) || 0) };
+    var added = 0, updated = 0, opened = 0;
+    list.forEach(function (it) {
+      var key = it.code.toUpperCase();
+      if (pos[key]) {
+        var row = pos[key];
+        var cur = mh[row - 1];
+        var ch = false;
+        if (it.name && String(cur[2] || '') !== it.name) { mhSh.getRange(row, 3).setValue(it.name); ch = true; }
+        if (it.brand && String(cur[3] || '') !== it.brand) { mhSh.getRange(row, 4).setValue(it.brand); ch = true; }
+        if (ch) updated++;
+      } else {
+        mhSh.appendRow([it.code, it.code, it.name || it.code, it.brand || '', '', '', 'Đang bán', 'Đồng bộ từ Drive']);
+        pos[key] = mhSh.getLastRow();
+        added++;
+      }
+      if (!tonPos[key]) { ensureTonRow_(ss, it.code); tonPos[key] = { row: tonSh.getLastRow(), dk: 0 }; }
+      var tp = tonPos[key];
+      if (tp.dk === 0 && (it.qn > 0 || it.hn > 0)) {
+        tonSh.getRange(tp.row, 12).setValue(it.qn);
+        tonSh.getRange(tp.row, 13).setValue(it.hn);
+        tp.dk = it.qn + it.hn;
+        opened++;
+      }
+    });
+    log_(actor_(sess), 'mhang', 'Đồng bộ danh mục từ Drive', '', 'Thêm mới ' + added + ' mã, cập nhật ' + updated + ' mã, nạp tồn đầu kỳ ' + opened + ' mã');
+    return 'Đồng bộ xong: thêm mới ' + added + ' mã, cập nhật tên/hãng ' + updated + ' mã, nạp tồn đầu kỳ 2 kho cho ' + opened + ' mã (chỉ nạp cho mã chưa có số đầu kỳ).';
   });
 }
 

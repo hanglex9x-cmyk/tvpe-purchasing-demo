@@ -201,10 +201,10 @@ var TITLES = { home: 'Trang chủ điều hành', po: 'Đơn hàng & PO', giavon
 /* Cột được sửa qua app (0-based) — khớp cấu hình phía server */
 var EDIT = {
   po: [1,2,3,4,5,6,8,11,12,13,15,16,18,19,20,22],
-  nx: [0,1,2,3,4,6,7,9],
+  nx: [0,1,2,3,4,6,7,9,10],
   giavon: [0,1,2,3,4,11,15],
   chiphi: [0,1,2,3,4],
-  ton: [2,6,8],
+  ton: [2,6,8,11,12],
   congno: [0,1,2,3,4,5,6,13],
   thanhtoan: [0,1,2,3,4,5,6],
   chungtu: [0,1,2,3,4,5,6,7,8],
@@ -382,13 +382,48 @@ var VIEWS = {
     return h;
   },
   ton: function () {
-    var stIdx = D.ton.headers.findIndex(function (x) { return /tình trạng/i.test(String(x)); });
-    var tonHide = stIdx >= 0 ? [stIdx] : [];
-    return '<div class="card"><h3>📦 Tồn kho theo mã hàng</h3><p class="desc">Tồn khả dụng = Tồn thực tế − Đã giữ cho dự án. Số 0 hoặc âm ở cột Tồn khả dụng sẽ tự tô đỏ. Bấm Sửa để cập nhật: tồn đầu kỳ, số lượng giữ cho dự án và ghi chú đơn giữ.</p>' + dataTable('ton', D.ton, { hideCols: tonHide }) + '</div>';
+    var brands = D.brands || {};
+    var sales = !PERMS.cost && !PERMS.kho;
+    var cols = sales
+      ? [{ i: 0, t: 'Mã hàng' }, { i: 1, t: 'Tên hàng' }, { i: 7, t: 'Tồn khả dụng', kd: 1 }, { i: 15, t: 'Khả dụng — Kho Quảng Ninh', kd: 1 }, { i: 16, t: 'Khả dụng — Kho Hà Nội', kd: 1 }]
+      : [{ i: 0, t: 'Mã hàng' }, { i: 1, t: 'Mô tả' }, { i: 13, t: 'Tồn QN' }, { i: 14, t: 'Tồn HN' }, { i: 5, t: 'Tồn thực tế' }, { i: 6, t: 'Đã giữ' }, { i: 7, t: 'Khả dụng', kd: 1 }, { i: 15, t: 'Khả dụng QN', kd: 1 }, { i: 16, t: 'Khả dụng HN', kd: 1 }, { i: 10, t: 'Đang về' }, { i: 9, t: 'Cảnh báo' }];
+    var groups = {}, order = [];
+    D.ton.rows.forEach(function (r) {
+      var b = brands[String(r[0])] || 'Chưa gắn hãng';
+      if (!groups[b]) { groups[b] = []; order.push(b); }
+      groups[b].push(r);
+    });
+    var ncols = cols.length + ((PERMS.write || PERMS.del) && !sales ? 1 : 0);
+    var h = '<div class="card"><h3>📦 Tồn kho theo hãng — chia 2 kho Quảng Ninh / Hà Nội</h3><p class="desc">Tồn được gom theo hãng giống bảng Drive của công ty. Tồn khả dụng = Tồn thực tế − Đã giữ cho dự án; khả dụng từng kho chia theo tỷ lệ tồn của kho đó. Số 0 hoặc âm ở cột khả dụng tự tô đỏ.</p>';
+    h += '<table><tr>' + cols.map(function (c) { return '<th>' + c.t + '</th>'; }).join('') + ((PERMS.write || PERMS.del) && !sales ? '<th>Thao tác</th>' : '') + '</tr>';
+    order.forEach(function (b) {
+      h += '<tr><td colspan="' + ncols + '" style="background:#E8EEF6;font-weight:700;color:#0B2341">🏭 ' + esc(b) + ' <span style="font-weight:400;color:#5A6B84">(' + groups[b].length + ' mã)</span></td></tr>';
+      groups[b].forEach(function (r) {
+        h += '<tr>';
+        cols.forEach(function (c) {
+          var v = r[c.i];
+          var cls = [];
+          if (typeof v === 'number') { cls.push('num'); if (v < 0 || (v === 0 && c.kd)) cls.push('neg'); }
+          if (c.i === 0) cls.push('code');
+          if (c.i === 1) cls.push('wide');
+          h += '<td' + (cls.length ? ' class="' + cls.join(' ') + '"' : '') + '>' + (c.i === 9 ? statusTag(v) : fmtN(v)) + '</td>';
+        });
+        if ((PERMS.write || PERMS.del) && !sales) {
+          var row = r[r.length - 1];
+          h += '<td class="act">' + (PERMS.write ? '<button class="btn sm edit" title="Sửa" onclick="openEdit(\'ton\',' + row + ')">✏️</button> ' : '') + (PERMS.del ? '<button class="btn sm del" title="Xóa" onclick="doDelete(\'ton\',' + row + ')">🗑️</button>' : '') + '</td>';
+        }
+        h += '</tr>';
+      });
+    });
+    return h + '</table></div>';
   },
   nx: function () {
     var h = '<div class="toolbar">' + (PERMS.write ? '<button class="btn" onclick="openPhieu()">➕ Ghi phiếu nhập / xuất</button>' : '') + '</div>';
-    h += '<div class="card"><h3>Lịch sử nhập — xuất kho</h3><p class="desc">Phiếu nhập gắn đúng Mã dòng PO sẽ tự cộng vào “SL đã nhận” của PO đó. Phiếu không gắn mã dòng PO = hàng stock.</p>' + dataTable('nx', D.nx, { render: function (i, v) { return i === 1 ? (v === 'Nhập' ? '<span class="tag green">Nhập</span>' : '<span class="tag amber">Xuất</span>') : null; } }) + '</div>';
+    h += '<div class="card"><h3>Lịch sử nhập — xuất kho</h3><p class="desc">Phiếu nhập gắn đúng Mã dòng PO sẽ tự cộng vào “SL đã nhận” của PO đó. Phiếu không gắn mã dòng PO = hàng stock. Bấm 👁 cạnh Mã phiếu để xem cả phiếu (mọi mặt hàng trong phiếu) giống phiếu trên MISA.</p>' + dataTable('nx', D.nx, { render: function (i, v) {
+      if (i === 1) return v === 'Nhập' ? '<span class="tag green">Nhập</span>' : '<span class="tag amber">Xuất</span>';
+      if (i === 2 && v) return esc(v) + ' <button class="btn sm navy" title="Xem cả phiếu" data-mp="' + esc(v) + '" onclick="viewPhieu(this)">👁</button>';
+      return null;
+    } }) + '</div>';
     return h;
   },
   congno: function () {
@@ -437,15 +472,24 @@ var VIEWS = {
         : '<p class="mut">Hiện không có dòng hàng nào đang về — tất cả đã nhận đủ.</p>') + '</div>';
   },
   napmisa: function () {
+    setTimeout(loadDriveCfg, 0);
     var h = '<div class="card"><h3>⬆️ Nạp file từ MISA</h3>' +
-      '<p class="mut">Bước 1: trong MISA, xuất danh sách mã hàng (hoặc báo cáo tồn kho) ra file Excel rồi lưu về máy.<br>' +
+      '<p class="mut">Bước 1: trong MISA, xuất file Excel cần nạp rồi lưu về máy.<br>' +
       'Bước 2: chọn loại file và chọn file ở dưới — hệ thống hiện bảng <b>xem trước</b> để kiểm tra.<br>' +
-      'Bước 3: kiểm tra đúng rồi bấm <b>Xác nhận nạp</b>. Chưa bấm xác nhận thì chưa có gì thay đổi.</p>' +
+      'Bước 3: kiểm tra đúng rồi bấm <b>Xác nhận nạp</b>. Chưa bấm xác nhận thì chưa có gì thay đổi. Phiếu đã nạp rồi sẽ tự bỏ qua, không bị trùng.</p>' +
       '<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:12px 0">' +
       '<label><input type="radio" name="impMode" value="master" checked onchange="impReset()"> 📋 Danh sách mã hàng (vào danh mục)</label>' +
-      '<label><input type="radio" name="impMode" value="ton" onchange="impReset()"> 📦 Báo cáo tồn kho (để đối chiếu)</label></div>' +
+      '<label><input type="radio" name="impMode" value="ton" onchange="impReset()"> 📦 Báo cáo tồn kho (để đối chiếu)</label>' +
+      '<label><input type="radio" name="impMode" value="phieu" onchange="impReset()"> 🧾 Phiếu nhập / xuất hằng ngày (Sổ chi tiết vật tư)</label></div>' +
       '<input type="file" id="impFile" accept=".xlsx,.xls,.csv" onchange="impRead(this)">' +
       '<div id="impPrev" style="margin-top:14px"></div></div>';
+    h += '<div class="card"><h3>🔄 Đồng bộ danh mục từ file Drive của công ty</h3>' +
+      '<p class="mut">Danh sách sản phẩm (mã hàng, tên hàng, hãng) và số tồn đầu kỳ 2 kho được lấy từ file “Báo cáo tồn kho thực tế” trên Drive — bên công ty cứ cập nhật mã mới lên file Drive như hiện tại, rồi bấm nút đồng bộ ở đây. Hệ thống tự thêm mã mới, tự xếp đúng hãng. Số tồn đầu kỳ chỉ nạp cho mã chưa có số đầu kỳ (tránh ghi đè số đã chạy).</p>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">' +
+      '<input id="drvUrl" placeholder="Dán link file Google Sheet danh mục trên Drive…" style="flex:1;min-width:280px;padding:9px 11px;border:1.5px solid #CBD6E4;border-radius:8px;font-size:13.5px">' +
+      '<button class="btn grayb" onclick="saveDriveCfg()">💾 Lưu link</button>' +
+      '<button class="btn" onclick="doSyncDrive(this)">🔄 Đồng bộ ngay</button></div>' +
+      '<div id="drvMsg" style="margin-top:10px"></div></div>';
     var dc = (D && D.doichieu) || { headers: [], rows: [] };
     h += '<div class="card"><h3>🔍 Kết quả đối chiếu tồn kho gần nhất (MISA ↔ hệ thống)</h3>' +
       (dc.rows.length ? dataTable('doichieu', dc, { noActions: true, render: function (i, v) {
@@ -495,15 +539,89 @@ function impCol(headers, keys) {
   for (var j = 0; j < headers.length; j++) { var t = impNorm(headers[j]); for (var k = 0; k < keys.length; k++) if (t.indexOf(keys[k]) >= 0) return j; }
   return -1;
 }
+function impFmtDate(v) {
+  if (v instanceof Date) { var p = function (n) { return ('0' + n).slice(-2); }; return p(v.getDate()) + '/' + p(v.getMonth() + 1) + '/' + v.getFullYear(); }
+  var s = String(v || '').trim();
+  var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return ('0' + m[3]).slice(-2) + '/' + ('0' + m[2]).slice(-2) + '/' + m[1];
+  return s;
+}
+function impKhoNorm(v) {
+  var t = impNorm(v);
+  if (!t) return '';
+  if (t.indexOf('quang ninh') >= 0 || t.indexOf('kqn') >= 0 || t.indexOf('ha long') >= 0 || t === 'qn') return 'QN';
+  if (t.indexOf('ha noi') >= 0 || t.indexOf('khn') >= 0 || t === 'hn') return 'HN';
+  return '';
+}
+function impParsePhieu(aoa) {
+  var prev = document.getElementById('impPrev');
+  var hi = -1, H = null;
+  for (var i = 0; i < Math.min(20, aoa.length); i++) {
+    var row = aoa[i] || [], hasNgay = false, hasSo = false;
+    row.forEach(function (c) { var t = impNorm(c); if (t.indexOf('ngay') === 0) hasNgay = true; if (t.indexOf('so chung tu') >= 0 || t.indexOf('so phieu') >= 0 || t === 'so ct' || t.indexOf('so hieu') >= 0) hasSo = true; });
+    if (hasNgay && hasSo) { hi = i; H = row; break; }
+  }
+  if (hi < 0) { IMP = null; prev.innerHTML = '<p class="neg">⚠️ Không tìm thấy dòng tiêu đề phiếu (cần cột “Ngày…” và cột “Số chứng từ”). Hãy xuất báo cáo <b>Sổ chi tiết vật tư hàng hóa</b> trong MISA rồi nạp lại.</p>'; return; }
+  var cNgay = impCol(H, ['ngay chung tu', 'ngay hach toan', 'ngay']);
+  var cSo = impCol(H, ['so chung tu', 'so phieu', 'so ct', 'so hieu']);
+  var cMa = impCol(H, ['ma vat tu', 'ma hang', 'ma vt', 'ma']);
+  var cNhap = -1, cXuat = -1, cSL = -1, cLoai = -1;
+  H.forEach(function (hd, j) {
+    var t = impNorm(hd);
+    if (t.indexOf('nhap') >= 0 && (t.indexOf('so luong') >= 0 || t.indexOf('sl') >= 0)) { if (cNhap < 0) cNhap = j; }
+    else if (t.indexOf('xuat') >= 0 && (t.indexOf('so luong') >= 0 || t.indexOf('sl') >= 0)) { if (cXuat < 0) cXuat = j; }
+    else if (t.indexOf('so luong') >= 0) { if (cSL < 0) cSL = j; }
+    else if (t.indexOf('loai') >= 0) { if (cLoai < 0) cLoai = j; }
+  });
+  var cKho = impCol(H, ['ten kho', 'kho']);
+  var cDG = impCol(H, ['dien giai', 'ghi chu', 'khach']);
+  var rows = [], curCode = '';
+  for (var i2 = hi + 1; i2 < aoa.length; i2++) {
+    var r = aoa[i2] || [];
+    if (cMa < 0) {
+      var joined = r.map(function (c) { return String(c || ''); }).join(' ');
+      var mm = joined.match(/mã\s*(vật tư|hàng|vt)?\s*[:\-]\s*([A-Za-z0-9\-\.\/]+)/i);
+      if (mm) { curCode = mm[2].trim(); continue; }
+    }
+    var ngay = impFmtDate(r[cNgay]);
+    var so = String(r[cSo] || '').trim();
+    var code = cMa >= 0 ? String(r[cMa] || '').trim() : curCode;
+    if (!ngay || !so || !code) continue;
+    var slN = cNhap >= 0 ? parseFloat(String(r[cNhap]).replace(/[^\d.\-]/g, '')) : NaN;
+    var slX = cXuat >= 0 ? parseFloat(String(r[cXuat]).replace(/[^\d.\-]/g, '')) : NaN;
+    var loai = '', sl = 0;
+    if (!isNaN(slN) && slN > 0) { loai = 'Nhập'; sl = slN; }
+    else if (!isNaN(slX) && slX > 0) { loai = 'Xuất'; sl = slX; }
+    else if (cSL >= 0) { sl = parseFloat(String(r[cSL]).replace(/[^\d.\-]/g, '')); loai = (cLoai >= 0 && impNorm(r[cLoai]).indexOf('xuat') >= 0) ? 'Xuất' : 'Nhập'; }
+    if (!loai || !(sl > 0)) continue;
+    rows.push({ ngay: ngay, loai: loai, maphieu: so, code: code, sl: sl, kho: cKho >= 0 ? impKhoNorm(r[cKho]) : '', khach: '', ghichu: cDG >= 0 ? String(r[cDG] || '') : '' });
+  }
+  if (!rows.length) { IMP = null; prev.innerHTML = '<p class="neg">⚠️ Đọc được tiêu đề nhưng không có dòng phiếu hợp lệ nào (cần Ngày, Số chứng từ, Mã hàng, Số lượng nhập/xuất).</p>'; return; }
+  IMP = { mode: 'phieu', rows: rows };
+  var ex = {}; (D.mhang.rows || []).forEach(function (x) { ex[String(x[0]).toUpperCase()] = 1; });
+  var moiSet = {};
+  rows.forEach(function (x) { if (!ex[String(x.code).toUpperCase()]) moiSet[x.code] = 1; });
+  var moi = Object.keys(moiSet);
+  var note = 'Đọc được <b>' + rows.length + ' dòng phiếu</b> (' + rows.filter(function (x) { return x.loai === 'Nhập'; }).length + ' nhập, ' + rows.filter(function (x) { return x.loai === 'Xuất'; }).length + ' xuất). Phiếu trùng sẽ tự bỏ qua khi nạp.';
+  if (moi.length) note += '<br><span class="neg">⚠️ ' + moi.length + ' mã chưa có trong danh mục (sẽ chưa nạp được): ' + moi.slice(0, 10).map(esc).join(', ') + (moi.length > 10 ? '…' : '') + ' — hãy đồng bộ danh mục từ Drive trước rồi nạp lại.</span>';
+  impPreview(note, ['Ngày', 'Số phiếu', 'Loại', 'Mã hàng', 'SL', 'Kho'], rows.map(function (x) { return [x.ngay, x.maphieu, x.loai, x.code, x.sl, x.kho === 'QN' ? 'Quảng Ninh' : x.kho === 'HN' ? 'Hà Nội' : '—']; }));
+}
 function impRead(inp) {
   var file = inp.files && inp.files[0]; if (!file) return;
   var mode = impMode();
   var done = function (aoa) {
+    if (mode === 'phieu') { impParsePhieu(aoa); return; }
     var hi = impFindHeader(aoa, mode === 'ton');
     if (hi < 0) { IMP = null; document.getElementById('impPrev').innerHTML = '<p class="neg">⚠️ Không tìm thấy dòng tiêu đề trong file. File cần có cột “Mã …”' + (mode === 'ton' ? ' và cột “Tồn …”' : '') + '. Kiểm tra lại file xuất từ MISA giúp em.</p>'; return; }
     var H = aoa[hi], rows = [], skip = 0;
     if (mode === 'master') {
-      var cMa = impCol(H, ['ma vat tu', 'ma hang', 'ma']), cTen = impCol(H, ['ten vat tu', 'ten hang', 'ten']), cModel = impCol(H, ['model', 'quy cach']), cHang = impCol(H, ['hang', 'nsx', 'thuong hieu', 'nha san xuat']), cDvt = impCol(H, ['dvt', 'don vi']), cNhom = impCol(H, ['nhom']), cTT = impCol(H, ['trang thai']), cNote = impCol(H, ['ghi chu']);
+      var cMa = impCol(H, ['ma vat tu', 'ma hang', 'ma']);
+      var cTen = -1;
+      for (var tj = 0; tj < H.length; tj++) { var tt2 = impNorm(H[tj]); if (tj !== cMa && tt2.indexOf('kho') < 0 && (tt2.indexOf('ten vat tu') >= 0 || tt2.indexOf('ten hang') >= 0 || tt2.indexOf('ten san pham') >= 0 || tt2 === 'ten' || tt2.indexOf('mo ta') >= 0)) { cTen = tj; break; } }
+      var cModel = impCol(H, ['model', 'quy cach']);
+      var cHang = -1;
+      for (var hj = 0; hj < H.length; hj++) { var ht2 = impNorm(H[hj]); if (hj !== cMa && hj !== cTen && ht2.indexOf('ma ') !== 0 && ht2.indexOf('ten hang') < 0 && (ht2.indexOf('hang') >= 0 || ht2.indexOf('nsx') >= 0 || ht2.indexOf('thuong hieu') >= 0)) { cHang = hj; break; } }
+      var cDvt = impCol(H, ['dvt', 'don vi']), cNhom = impCol(H, ['nhom']), cTT = impCol(H, ['trang thai']), cNote = impCol(H, ['ghi chu']);
       if (cMa < 0) { document.getElementById('impPrev').innerHTML = '<p class="neg">⚠️ Không thấy cột Mã trong file.</p>'; return; }
       for (var i = hi + 1; i < aoa.length; i++) { var r = aoa[i] || [], code = String((cMa >= 0 ? r[cMa] : '') || '').trim(); if (!code) { skip++; continue; } rows.push([code, String((cModel >= 0 ? r[cModel] : '') || code), String((cTen >= 0 ? r[cTen] : '') || ''), String((cHang >= 0 ? r[cHang] : '') || ''), String((cDvt >= 0 ? r[cDvt] : '') || ''), String((cNhom >= 0 ? r[cNhom] : '') || ''), String((cTT >= 0 ? r[cTT] : '') || 'Đang bán'), '']); }
       IMP = { mode: mode, rows: rows };
@@ -527,7 +645,7 @@ function impRead(inp) {
   } else {
     if (typeof XLSX === 'undefined') { document.getElementById('impPrev').innerHTML = '<p class="neg">⚠️ Chưa tải được thư viện đọc Excel — kiểm tra mạng rồi thử lại, hoặc xuất file dạng .csv từ MISA.</p>'; return; }
     var rd2 = new FileReader();
-    rd2.onload = function () { try { var wb = XLSX.read(new Uint8Array(rd2.result), { type: 'array' }); var ws = wb.Sheets[wb.SheetNames[0]]; done(XLSX.utils.sheet_to_json(ws, { header: 1, raw: true })); } catch (e) { document.getElementById('impPrev').innerHTML = '<p class="neg">⚠️ Đọc file lỗi: ' + e.message + '</p>'; } };
+    rd2.onload = function () { try { var wb = XLSX.read(new Uint8Array(rd2.result), { type: 'array', cellDates: true }); var ws = wb.Sheets[wb.SheetNames[0]]; done(XLSX.utils.sheet_to_json(ws, { header: 1, raw: true })); } catch (e) { document.getElementById('impPrev').innerHTML = '<p class="neg">⚠️ Đọc file lỗi: ' + e.message + '</p>'; } };
     rd2.readAsArrayBuffer(file);
   }
 }
@@ -542,10 +660,35 @@ function impPreview(note, cols, rows) {
 function impConfirm(btn) {
   if (!IMP || !IMP.rows.length) return;
   btn.disabled = true; btn.textContent = 'Đang nạp…';
-  var fn = IMP.mode === 'master' ? 'importMaster' : 'importDoiChieu';
+  var fn = IMP.mode === 'master' ? 'importMaster' : (IMP.mode === 'phieu' ? 'importPhieu' : 'importDoiChieu');
   google.script.run.withSuccessHandler(function (msg) { toast(msg); IMP = null; load(); })
-    .withFailureHandler(function (e) { btn.disabled = false; btn.textContent = '✔ Xác nhận nạp'; fail(e); })
+    .withFailureHandler(function (e) { btn.disabled = false; btn.textContent = '✔ Xác nhận nạp'; if (!authFail(e)) toast('❌ Lỗi: ' + e.message); })
     [fn](TOKEN, IMP.rows);
+}
+
+/* ---------- Đồng bộ danh mục từ Drive ---------- */
+function loadDriveCfg() {
+  var inp = document.getElementById('drvUrl');
+  if (!inp) return;
+  google.script.run.withSuccessHandler(function (cfg) { if (cfg && cfg.url) inp.value = cfg.url; })
+    .withFailureHandler(function () { }).getDriveCfg(TOKEN);
+}
+function saveDriveCfg() {
+  var url = gv('drvUrl');
+  if (!url) { toast('⚠️ Chưa dán link file Drive'); return; }
+  google.script.run.withSuccessHandler(function (m) { toast('✅ ' + m); })
+    .withFailureHandler(function (e) { if (!authFail(e)) toast('❌ ' + e.message); }).setDriveCfg(TOKEN, url);
+}
+function doSyncDrive(btn) {
+  btn.disabled = true; btn.textContent = '⏳ Đang đồng bộ…';
+  google.script.run.withSuccessHandler(function (m) {
+    btn.disabled = false; btn.textContent = '🔄 Đồng bộ ngay';
+    document.getElementById('drvMsg').innerHTML = '<div class="ok">✅ ' + esc(m) + '</div>';
+    load();
+  }).withFailureHandler(function (e) {
+    btn.disabled = false; btn.textContent = '🔄 Đồng bộ ngay';
+    if (!authFail(e)) document.getElementById('drvMsg').innerHTML = '<div class="alert">❌ ' + esc(e.message) + '</div>';
+  }).syncDriveMaster(TOKEN);
 }
 
 function permChecks(prefix, p) {
@@ -672,16 +815,32 @@ function openPhieu() {
     + '<div class="frow"><div class="fld"><label>Loại phiếu</label><select id="n_loai"><option>Nhập</option><option>Xuất</option></select></div><div class="fld"><label>Mã phiếu</label><input id="n_phieu" placeholder="PN-07 / PX-04"></div></div>'
     + '<div class="frow"><div class="fld"><label>Ngày</label><input id="n_ngay" type="date"></div><div class="fld"><label>Product Code *</label><select id="n_ma">' + codes.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') + '</select></div></div>'
     + '<div class="fld"><label>Mã dòng PO (để trống nếu là hàng stock)</label><select id="n_po"><option value="">— Hàng stock / không gắn PO —</option>' + polines.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') + '</select></div>'
-    + '<div class="frow"><div class="fld"><label>Số lượng *</label><input id="n_sl" type="number" min="1"></div><div class="fld"><label>Khách / Dự án (khi xuất)</label><input id="n_khach"></div></div>'
-    + '<div class="fld"><label>Ghi chú</label><input id="n_note"></div>'
+    + '<div class="frow"><div class="fld"><label>Số lượng *</label><input id="n_sl" type="number" min="1"></div><div class="fld"><label>Kho</label><select id="n_kho"><option value="QN">Quảng Ninh (Hạ Long)</option><option value="HN">Hà Nội</option><option value="">— Chưa rõ —</option></select></div></div>'
+    + '<div class="frow"><div class="fld"><label>Khách / Dự án (khi xuất)</label><input id="n_khach"></div><div class="fld"><label>Ghi chú</label><input id="n_note"></div></div>'
     + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Hủy</button><button class="btn" onclick="submitPhieu()">💾 Lưu phiếu</button></div>';
   showModal(h);
 }
 function submitPhieu() {
   if (!gv('n_sl')) { toast('⚠️ Điền số lượng'); return; }
-  var o = { loai: gv('n_loai'), maphieu: gv('n_phieu'), ngay: dstr('n_ngay'), ma: gv('n_ma'), madongpo: gv('n_po'), sl: gv('n_sl'), khach: gv('n_khach'), note: gv('n_note') };
+  var o = { loai: gv('n_loai'), maphieu: gv('n_phieu'), ngay: dstr('n_ngay'), ma: gv('n_ma'), madongpo: gv('n_po'), sl: gv('n_sl'), khach: gv('n_khach'), note: gv('n_note'), kho: gv('n_kho') };
   closeModal();
   run('addPhieu', [o]);
+}
+function viewPhieu(btn) {
+  var mp = btn.getAttribute('data-mp');
+  var lines = D.nx.rows.filter(function (r) { return String(r[2]) === mp; });
+  if (!lines.length) { toast('Không tìm thấy phiếu'); return; }
+  var f = lines[0];
+  var tong = 0;
+  var rowsHtml = lines.map(function (r, idx) {
+    tong += Number(r[6]) || 0;
+    return '<tr><td>' + (idx + 1) + '</td><td class="code">' + esc(r[4]) + '</td><td>' + esc(r[5]) + '</td><td class="num">' + fmtN(r[6]) + '</td><td>' + esc(r[10] || '') + '</td><td>' + esc(r[3] || '—') + '</td><td>' + esc(r[7] || '') + '</td><td>' + esc(r[9] || '') + '</td></tr>';
+  }).join('');
+  var h = '<h3>🧾 Phiếu ' + esc(f[1]) + ' — ' + esc(mp) + '</h3>'
+    + '<p style="font-size:13.5px;color:#5A6B84;margin-bottom:12px">Ngày: <b>' + esc(f[0]) + '</b> · Kho: <b>' + esc(f[10] === 'QN' ? 'Quảng Ninh' : f[10] === 'HN' ? 'Hà Nội' : '—') + '</b> · Tổng số lượng: <b>' + fmtN(tong) + '</b></p>'
+    + '<table><tr><th>STT</th><th>Mã hàng</th><th>Tên hàng</th><th>SL</th><th>Kho</th><th>Mã dòng PO</th><th>Khách / Dự án</th><th>Ghi chú</th></tr>' + rowsHtml + '</table>'
+    + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Đóng</button></div>';
+  showModal(h);
 }
 function openTT() {
   if (!needUser()) return;
