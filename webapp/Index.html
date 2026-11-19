@@ -667,7 +667,7 @@ function submitPO() {
 function openPhieu() {
   if (!needUser()) return;
   var codes = D.mhang.rows.map(function (r) { return r[0]; });
-  var polines = D.po.rows.map(function (r) { return r[0]; });
+  var polines = (D.po && D.po.rows && D.po.rows.length) ? D.po.rows.map(function (r) { return r[0]; }) : ((D.polines && D.polines.rows) || []).map(function (r) { return r[0]; });
   var h = '<h3>➕ Ghi phiếu nhập / xuất kho</h3>'
     + '<div class="frow"><div class="fld"><label>Loại phiếu</label><select id="n_loai"><option>Nhập</option><option>Xuất</option></select></div><div class="fld"><label>Mã phiếu</label><input id="n_phieu" placeholder="PN-07 / PX-04"></div></div>'
     + '<div class="frow"><div class="fld"><label>Ngày</label><input id="n_ngay" type="date"></div><div class="fld"><label>Product Code *</label><select id="n_ma">' + codes.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') + '</select></div></div>'

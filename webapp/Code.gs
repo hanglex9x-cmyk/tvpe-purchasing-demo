@@ -53,6 +53,13 @@ function permsFrom_(role, g, h, i2, j) {
   }
   return { cost: g === 'Có', write: h === 'Có', del: i2 === 'Có', approve: j === 'Có', kho: role === 'Kho' };
 }
+function polines_() {
+  // Danh sách mã dòng PO (chỉ mã, KHÔNG giá) — để vai trò Kho gắn phiếu nhập vào đúng dòng PO khi nhận hàng
+  var vals = ss_().getSheetByName('PO').getDataRange().getValues();
+  var rows = [];
+  for (var i = 1; i < vals.length; i++) if (vals[i][0]) rows.push([vals[i][0], vals[i][6]]);
+  return { headers: ['Mã dòng PO', 'Product Code'], rows: rows };
+}
 function tiendo_() {
   // Tiến độ hàng mua đang về — bản rút gọn KHÔNG có giá, dùng chung cho Sales và Kho
   var vals = ss_().getSheetByName('PO').getDataRange().getValues();
@@ -149,7 +156,7 @@ function addUser(token, username, name, role, pw, perms) {
   var sess = auth_(token); requireAdmin_(sess);
   username = String(username || '').trim().toLowerCase();
   if (!username || !name || !pw) throw new Error('Điền đủ: tên đăng nhập, họ tên, mật khẩu.');
-  if (['Admin', 'Mua hàng', 'Sales'].indexOf(role) < 0) throw new Error('Vai trò không hợp lệ.');
+  if (['Admin', 'Mua hàng', 'Sales', 'Kho'].indexOf(role) < 0) throw new Error('Vai trò không hợp lệ.');
   return withLock_(function () {
     var users = users_();
     for (var i = 0; i < users.length; i++) if (users[i].username.toLowerCase() === username) throw new Error('Tên đăng nhập đã tồn tại.');
@@ -162,7 +169,7 @@ function addUser(token, username, name, role, pw, perms) {
 }
 function updateUser(token, username, name, role, perms) {
   var sess = auth_(token); requireAdmin_(sess);
-  if (['Admin', 'Mua hàng', 'Sales'].indexOf(role) < 0) throw new Error('Vai trò không hợp lệ.');
+  if (['Admin', 'Mua hàng', 'Sales', 'Kho'].indexOf(role) < 0) throw new Error('Vai trò không hợp lệ.');
   return withLock_(function () {
     var users = users_();
     for (var i = 0; i < users.length; i++) {
@@ -245,6 +252,7 @@ function getAllData(token) {
     out.nx = tab_('NHAP_XUAT_KHO');
     out.mhang = tab_('MASTER_HANG');
     out.doichieu = tab_('DOI_CHIEU');
+    out.polines = polines_();
     out.kpi = {};
     ['po', 'giavon', 'chiphi', 'congno', 'thanhtoan', 'chungtu', 'duyet', 'giahang', 'giaban', 'mncc', 'mkhach', 'lichsu'].forEach(function (k) { out[k] = { headers: [], rows: [] }; });
     return out;
