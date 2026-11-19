@@ -142,6 +142,7 @@
     <div class="menu-label">Bán hàng</div>
     <nav class="menu">
       <a data-view="giaban" class="mitem"><span class="ic">🏷️</span><span class="tx">Bảng giá bán</span></a>
+      <a data-view="tiendo" class="mitem"><span class="ic">🚚</span><span class="tx">Tiến độ hàng về</span></a>
       <a data-view="duyet" class="mitem"><span class="ic">✅</span><span class="tx">Phê duyệt giá</span><span class="badge hide" id="duyetBadge"></span></a>
       <a data-view="giahang" class="mitem"><span class="ic">🏭</span><span class="tx">Bảng giá hãng</span></a>
     </nav>
@@ -196,7 +197,7 @@
 var D = null, ROLE = 'internal', USER = '';
 var TOKEN = localStorage.getItem('tvpe_token') || '', ME = null;
 var PERMS = { cost: true, write: true, del: true, approve: true };
-var TITLES = { home: 'Trang chủ điều hành', po: 'Đơn hàng & PO', giavon: 'Giá vốn & chi phí nhập khẩu', ton: 'Kho & tồn kho', nx: 'Nhập / Xuất kho', congno: 'Công nợ & thanh toán', chungtu: 'Hồ sơ chứng từ', giaban: 'Bảng giá bán', duyet: 'Phê duyệt giá bán', giahang: 'Bảng giá hãng (giá mua)', master: 'Master Data', lichsu: 'Nhật ký thao tác theo người dùng', users: 'Hệ thống — Người dùng & phân quyền', napmisa: 'Nạp file từ MISA' };
+var TITLES = { home: 'Trang chủ điều hành', po: 'Đơn hàng & PO', giavon: 'Giá vốn & chi phí nhập khẩu', ton: 'Kho & tồn kho', nx: 'Nhập / Xuất kho', congno: 'Công nợ & thanh toán', chungtu: 'Hồ sơ chứng từ', giaban: 'Bảng giá bán', duyet: 'Phê duyệt giá bán', giahang: 'Bảng giá hãng (giá mua)', master: 'Master Data', lichsu: 'Nhật ký thao tác theo người dùng', users: 'Hệ thống — Người dùng & phân quyền', napmisa: 'Nạp file từ MISA', tiendo: 'Tiến độ hàng mua đang về' };
 /* Cột được sửa qua app (0-based) — khớp cấu hình phía server */
 var EDIT = {
   po: [1,2,3,4,5,6,8,11,12,13,15,16,18,19,20,22],
@@ -428,6 +429,13 @@ var VIEWS = {
     var tab = { headers: D.lichsu.headers, rows: rows };
     return '<div class="card"><h3>📜 Nhật ký thao tác</h3><p class="desc">Mọi thao tác Thêm / Sửa / Xóa / Duyệt giá trên App đều được ghi lại kèm thời gian và tên người thực hiện (mới nhất ở trên).</p>' + dataTable('lichsu', tab, { noActions: true }) + '</div>';
   },
+  tiendo: function () {
+    var td = (D && D.tiendo) || { headers: [], rows: [] };
+    return '<div class="card"><h3>🚚 Tiến độ hàng mua đang về</h3>' +
+      '<p class="mut">Các dòng hàng đang trên đường về: đang sản xuất / đang vận chuyển / đã về kho một phần. Tiến độ do phòng Mua hàng cập nhật theo trạng thái đơn mua. Bảng này chỉ có số lượng và trạng thái — không có giá.</p>' +
+      (td.rows.length ? dataTable('tiendo', td, { noActions: true, render: function (i, v) { return i === 6 ? statusTag(v) : null; } })
+        : '<p class="mut">Hiện không có dòng hàng nào đang về — tất cả đã nhận đủ.</p>') + '</div>';
+  },
   napmisa: function () {
     var h = '<div class="card"><h3>⬆️ Nạp file từ MISA</h3>' +
       '<p class="mut">Bước 1: trong MISA, xuất danh sách mã hàng (hoặc báo cáo tồn kho) ra file Excel rồi lưu về máy.<br>' +
@@ -550,6 +558,7 @@ function readPerms(prefix) {
 function presetPerms(role) {
   if (role === 'Admin') return { cost: true, write: true, del: true, approve: true };
   if (role === 'Mua hàng') return { cost: true, write: true, del: true, approve: false };
+  if (role === 'Kho') return { cost: false, write: true, del: false, approve: false };
   return { cost: false, write: false, del: false, approve: false };
 }
 function applyPreset(prefix) {
@@ -561,7 +570,7 @@ function openAddUser() {
   var h = '<h3>➕ Tạo tài khoản mới</h3>'
     + '<div class="fld"><label>Tên đăng nhập *</label><input id="u_name" placeholder="vd: lananh"></div>'
     + '<div class="fld"><label>Họ tên *</label><input id="u_full" placeholder="vd: Nguyễn Lan Anh"></div>'
-    + '<div class="frow"><div class="fld"><label>Vai trò (chọn để nạp mẫu quyền)</label><select id="u_role" onchange="applyPreset(\'u\')"><option>Mua hàng</option><option>Sales</option><option>Admin</option></select></div>'
+    + '<div class="frow"><div class="fld"><label>Vai trò (chọn để nạp mẫu quyền)</label><select id="u_role" onchange="applyPreset(\'u\')"><option>Mua hàng</option><option>Sales</option><option>Kho</option><option>Admin</option></select></div>'
     + '<div class="fld"><label>Mật khẩu tạm *</label><input id="u_pw" placeholder="Ít nhất 6 ký tự"></div></div>'
     + '<div class="fld"><label>Phân quyền chi tiết</label>' + permChecks('u', presetPerms('Mua hàng')) + '</div>'
     + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Hủy</button><button class="btn" onclick="submitAddUser()">💾 Tạo tài khoản</button></div>';
@@ -579,7 +588,7 @@ function openEditUser(username) {
   if (!u) { toast('Không tìm thấy tài khoản'); return; }
   var h = '<h3>✏️ Sửa &amp; phân quyền — ' + esc(username) + '</h3>'
     + '<div class="fld"><label>Họ tên</label><input id="e_full" value="' + esc(u.name) + '"></div>'
-    + '<div class="fld"><label>Vai trò (chọn để nạp mẫu quyền)</label><select id="e_role" onchange="applyPreset(\'e\')"><option' + (u.role === 'Mua hàng' ? ' selected' : '') + '>Mua hàng</option><option' + (u.role === 'Sales' ? ' selected' : '') + '>Sales</option><option' + (u.role === 'Admin' ? ' selected' : '') + '>Admin</option></select></div>'
+    + '<div class="fld"><label>Vai trò (chọn để nạp mẫu quyền)</label><select id="e_role" onchange="applyPreset(\'e\')"><option' + (u.role === 'Mua hàng' ? ' selected' : '') + '>Mua hàng</option><option' + (u.role === 'Sales' ? ' selected' : '') + '>Sales</option><option' + (u.role === 'Kho' ? ' selected' : '') + '>Kho</option><option' + (u.role === 'Admin' ? ' selected' : '') + '>Admin</option></select></div>'
     + '<div class="fld"><label>Phân quyền chi tiết</label>' + permChecks('e', u.perms) + '</div>'
     + '<div class="mactions"><button class="btn grayb" onclick="closeModal()">Hủy</button><button class="btn" onclick="submitEditUser(\'' + esc(username) + '\')">💾 Lưu phân quyền</button></div>';
   showModal(h);
@@ -737,7 +746,8 @@ function printPO() {
 
 /* ---------- Điều hướng ---------- */
 function show(view) {
-  if (ME && !PERMS.cost && ['giaban', 'ton'].indexOf(view) < 0) view = 'giaban';
+  if (ME && PERMS.kho && ['ton', 'nx', 'napmisa'].indexOf(view) < 0) view = 'ton';
+  else if (ME && !PERMS.cost && ['giaban', 'ton', 'tiendo'].indexOf(view) < 0) view = 'giaban';
   document.querySelectorAll('.mitem').forEach(function (a) { a.classList.toggle('active', a.getAttribute('data-view') === view); });
   document.getElementById('viewTitle').textContent = TITLES[view] || view;
   document.getElementById('app').innerHTML = VIEWS[view]();
@@ -807,11 +817,11 @@ function applyRoleUI() {
   document.getElementById('logoutBtn').classList.remove('hide');
   document.getElementById('menuUsers').classList.toggle('hide', ME.role !== 'Admin');
   document.getElementById('menuNap').classList.toggle('hide', !PERMS.write);
-  var limited = !PERMS.cost;
+  var allowed = PERMS.kho ? ['ton', 'nx', 'napmisa'] : (!PERMS.cost ? ['giaban', 'ton', 'tiendo'] : null);
   document.querySelectorAll('.mitem').forEach(function (a) {
     var v = a.getAttribute('data-view');
     if (v === 'users') return;
-    a.classList.toggle('hide', limited && ['giaban', 'ton'].indexOf(v) < 0);
+    a.classList.toggle('hide', !!allowed && allowed.indexOf(v) < 0);
   });
 }
 
@@ -831,7 +841,7 @@ function load() {
     document.getElementById('loading').classList.add('hide');
     document.getElementById('app').classList.remove('hide');
     var cur = document.querySelector('.mitem.active');
-    show(cur ? cur.getAttribute('data-view') : (!PERMS.cost ? 'giaban' : 'home'));
+    show(cur ? cur.getAttribute('data-view') : (PERMS.kho ? 'ton' : (!PERMS.cost ? 'giaban' : 'home')));
   }).withFailureHandler(function (e) {
     if (!authFail(e)) document.getElementById('loading').textContent = '❌ Không tải được dữ liệu: ' + e.message;
   }).getAllData(TOKEN);

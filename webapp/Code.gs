@@ -44,13 +44,26 @@ function hashPw_(salt, pw) {
 }
 function permsFrom_(role, g, h, i2, j) {
   // Admin luôn toàn quyền; các vai trò khác đọc 4 cột quyền chi tiết, trống thì dùng mẫu theo vai trò
-  if (role === 'Admin') return { cost: true, write: true, del: true, approve: true };
+  if (role === 'Admin') return { cost: true, write: true, del: true, approve: true, kho: false };
   var any = [g, h, i2, j].some(function (x) { return String(x || '') !== ''; });
   if (!any) {
-    if (role === 'Mua hàng') return { cost: true, write: true, del: true, approve: false };
-    return { cost: false, write: false, del: false, approve: false }; // Sales và vai trò khác
+    if (role === 'Mua hàng') return { cost: true, write: true, del: true, approve: false, kho: false };
+    if (role === 'Kho') return { cost: false, write: true, del: false, approve: false, kho: true };
+    return { cost: false, write: false, del: false, approve: false, kho: false }; // Sales và vai trò khác
   }
-  return { cost: g === 'Có', write: h === 'Có', del: i2 === 'Có', approve: j === 'Có' };
+  return { cost: g === 'Có', write: h === 'Có', del: i2 === 'Có', approve: j === 'Có', kho: role === 'Kho' };
+}
+function tiendo_() {
+  // Tiến độ hàng mua đang về — bản rút gọn KHÔNG có giá, dùng chung cho Sales và Kho
+  var vals = ss_().getSheetByName('PO').getDataRange().getValues();
+  var rows = [];
+  for (var i = 1; i < vals.length; i++) {
+    var r = vals[i];
+    if (!r[6]) continue;
+    if (!(Number(r[10]) > 0)) continue; // chỉ dòng còn thiếu hàng = đang về
+    rows.push([r[6], r[7], r[2], r[8], r[9], r[10], r[18], r[19]]);
+  }
+  return { headers: ['Mã hàng', 'Tên hàng', 'Khách / Dự án', 'SL đặt', 'SL đã nhận', 'SL còn thiếu', 'Trạng thái', 'ETA dự kiến'], rows: rows };
 }
 function users_() {
   var sh = ss_().getSheetByName('PHAN_QUYEN');
@@ -225,8 +238,19 @@ function blankCols_(tab, cols) {
 function getAllData(token) {
   var sess = auth_(token);
   var out = { portal: PORTAL_URL, me: { username: sess.u, name: sess.name, role: sess.role, perms: sess.perms } };
+  out.tiendo = tiendo_();
+  if (sess.perms && sess.perms.kho) {
+    // Vai trò KHO: chỉ kho + nhập/xuất + master (để chọn mã) + đối chiếu MISA + tiến độ — server KHÔNG gửi giá bán, giá vốn, PO, công nợ.
+    out.ton = tab_('TON_KHO');
+    out.nx = tab_('NHAP_XUAT_KHO');
+    out.mhang = tab_('MASTER_HANG');
+    out.doichieu = tab_('DOI_CHIEU');
+    out.kpi = {};
+    ['po', 'giavon', 'chiphi', 'congno', 'thanhtoan', 'chungtu', 'duyet', 'giahang', 'giaban', 'mncc', 'mkhach', 'lichsu'].forEach(function (k) { out[k] = { headers: [], rows: [] }; });
+    return out;
+  }
   if (!sess.perms || !sess.perms.cost) {
-    // Tài khoản KHÔNG có quyền xem giá vốn: CHỈ giá bán (đã che giá sàn nội bộ) + tồn khả dụng (chỉ mã, tên, khả dụng) — server không gửi dữ liệu giá vốn/PO/công nợ.
+    // Tài khoản KHÔNG có quyền xem giá vốn: CHỈ giá bán (đã che giá sàn nội bộ) + tồn khả dụng (chỉ mã, tên, khả dụng) + tiến độ hàng về (không giá) — server không gửi dữ liệu giá vốn/PO/công nợ.
     out.giaban = blankCols_(tab_('BANG_GIA_BAN'), [9]);
     var ton = tab_('TON_KHO');
     ton.rows.forEach(function (r) { for (var c = 0; c < r.length - 1; c++) { if ([0, 1, 7].indexOf(c) < 0) r[c] = ''; } });
@@ -263,8 +287,11 @@ function withLock_(fn) {
   lock.waitLock(20000);
   try { return fn(); } finally { lock.releaseLock(); }
 }
+function guardKho_(sess, tabKey) {
+  if (sess.perms && sess.perms.kho && tabKey !== 'nx') throw new Error('Tài khoản Kho chỉ được nhập / sửa dữ liệu Nhập – Xuất kho.');
+}
 function updateRow(token, tabKey, row, obj) {
-  var sess = auth_(token); requireWrite_(sess);
+  var sess = auth_(token); requireWrite_(sess); guardKho_(sess, tabKey);
   var cfg = TABS[tabKey];
   if (!cfg) throw new Error('Bảng không hợp lệ: ' + tabKey);
   return withLock_(function () {
@@ -283,7 +310,7 @@ function updateRow(token, tabKey, row, obj) {
   });
 }
 function deleteRow(token, tabKey, row) {
-  var sess = auth_(token); requireDelete_(sess);
+  var sess = auth_(token); requireDelete_(sess); guardKho_(sess, tabKey);
   var cfg = TABS[tabKey];
   if (!cfg) throw new Error('Bảng không hợp lệ: ' + tabKey);
   return withLock_(function () {
@@ -295,7 +322,7 @@ function deleteRow(token, tabKey, row) {
   });
 }
 function addRow(token, tabKey, values) {
-  var sess = auth_(token); requireWrite_(sess);
+  var sess = auth_(token); requireWrite_(sess); guardKho_(sess, tabKey);
   var cfg = TABS[tabKey];
   if (!cfg) throw new Error('Bảng không hợp lệ: ' + tabKey);
   return withLock_(function () {
@@ -321,7 +348,7 @@ function addRow(token, tabKey, values) {
   });
 }
 function addPO(token, o) {
-  var sess = auth_(token); requireWrite_(sess);
+  var sess = auth_(token); requireWrite_(sess); guardKho_(sess, 'po');
   return withLock_(function () {
     var sh = ss_().getSheetByName('PO');
     var r = sh.getLastRow() + 1;
@@ -358,7 +385,7 @@ function addPhieu(token, o) {
   });
 }
 function addThanhToan(token, o) {
-  var sess = auth_(token); requireWrite_(sess);
+  var sess = auth_(token); requireWrite_(sess); guardKho_(sess, 'thanhtoan');
   return withLock_(function () {
     var sh = ss_().getSheetByName('THANH_TOAN');
     sh.appendRow([o.ngay, o.inv, o.ncc, Number(o.tien), o.ht, o.ck || '', o.note || '']);
@@ -368,7 +395,7 @@ function addThanhToan(token, o) {
 }
 /* ================= NẠP FILE TỪ MISA ================= */
 function importMaster(token, rows) {
-  var sess = auth_(token); requireWrite_(sess);
+  var sess = auth_(token); requireWrite_(sess); guardKho_(sess, 'mhang');
   if (!rows || !rows.length) throw new Error('Không có dòng dữ liệu nào trong file.');
   return withLock_(function () {
     var sh = ss_().getSheetByName('MASTER_HANG');
